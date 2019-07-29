@@ -37,7 +37,7 @@ Java_i3d_native0701_MainActivity_getImage(JNIEnv *env, jclass, jobject bitmap) {
     static bool isInit = true;
     static int index = 0;
     static vector<Frame> frames;
-    string root_dir("/sdcard/000i3d1");
+    string root_dir("/sdcard/000i3d2");
     if(isInit)
     {
         LOGW("debug_initInputData start.........");

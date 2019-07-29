@@ -6,68 +6,130 @@
 
 int WarperGlesInitializer::GenerateFbos()
 {
+    GLenum err;
     //..............................................................................//
     //......................skybox frame buffer objects.............................//
     //..............................................................................//
 
     //>>>>>>>>>>>>>>>>>>>>>>color frame buffer<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
     // framebuffer configuration
-    glGenFramebuffers(1, &fboColor1);
-    glBindFramebuffer(GL_FRAMEBUFFER, fboColor1);
+    glGenFramebuffers(6, fboSkybox1);
+    for(int i=0; i<6; ++i)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, fboSkybox1[i]);
 
-    // create a color attachment texture
-    glGenTextures(1, &mColorTex2D1);
-    glBindTexture(GL_TEXTURE_2D, mColorTex2D1);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WIDTH1, HEIGHT1, 0, GL_RGBA,  GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mColorTex2D1, 0);
+        // create a color attachment texture
+        glGenTextures(1, &skyboxColorTex2D[i]);
+        glBindTexture(GL_TEXTURE_2D, skyboxColorTex2D[i]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WIDTH1, HEIGHT1, 0, GL_RGBA,  GL_UNSIGNED_BYTE, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, skyboxColorTex2D[i], 0);
+        while((err = glGetError()) != GL_NO_ERROR)
+            LOGE(" WarperGlesInitializer::GenerateFbos() : mSkyboxColorTex2D err == %d", err);
 
-    // create a depth attachment texture
-    glGenTextures(1, &mDepthTex2D1);
-    glBindTexture(GL_TEXTURE_2D, mColorTex2D1);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WIDTH1, HEIGHT1, 0, GL_RGBA,  GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mColorTex2D1, 0);
-    // create a renderbuffer object for depth and stencil attachment (we won't be sampling these)
-    //更接近opengl原生数据结构，当不需要读取(比如glReadPixels)这些数据时效率非常快，一般用来depth test 和stencil test
-    glGenRenderbuffers(1, &mColorRenderBuffer1);
-    glBindRenderbuffer(GL_RENDERBUFFER, mColorRenderBuffer1);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH32F_STENCIL8, WIDTH1, HEIGHT1); // use a single renderbuffer object for both a depth AND stencil buffer.
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, mColorRenderBuffer1); // now actually attach it
-    // now that we actually created the framebuffer and added all attachments we want to check if it is actually complete now
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        LOGE("ERROR::FRAMEBUFFER:: Framebuffer is not complete!");
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glGenRenderbuffers(1, &mSkyboxRenderBuffer[i]);
+        glBindRenderbuffer(GL_RENDERBUFFER, mSkyboxRenderBuffer[i]);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH32F_STENCIL8, WIDTH1, HEIGHT1); // use a single renderbuffer object for both a depth AND stencil buffer.
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, mSkyboxRenderBuffer[i]); // now actually attach it
+        // now that we actually created the framebuffer and added all attachments we want to check if it is actually complete now
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+            LOGE("WarperGlesInitializer::GenerateFbos(): ERROR::FRAMEBUFFER:: Framebuffer is not complete!");
+
+        //不用DrawBuffers，则只会画Attachment0所在的颜色附着。
+//        GLuint attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+//        glDrawBuffers(2, attachments);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
 
     //>>>>>>>>>>>>>>>>>>>>>>depth frame buffer<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
     // framebuffer configuration
-    glGenFramebuffers(1, &fboDepth1);
-    glBindFramebuffer(GL_FRAMEBUFFER, fboDepth1);
+    glGenFramebuffers(6, fboSkybox2);
+    for(int i=0; i<6; ++i)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, fboSkybox2[i]);
 
-    // create a color attachment texture
-    glGenTextures(1, &mDepthTex2D1);
-    glBindTexture(GL_TEXTURE_2D, mDepthTex2D1);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, WIDTH1, HEIGHT1, 0, GL_RGBA,  GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mDepthTex2D1, 0);
-    // create a renderbuffer object for depth and stencil attachment (we won't be sampling these)
-    //更接近opengl原生数据结构，当不需要读取(比如glReadPixels)这些数据时效率非常快，一般用来depth test 和stencil test
-    glGenRenderbuffers(1, &mDepthRenderBuffer1);
-    glBindRenderbuffer(GL_RENDERBUFFER, mDepthRenderBuffer1);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH32F_STENCIL8, WIDTH1, HEIGHT1); // use a single renderbuffer object for both a depth AND stencil buffer.
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, mDepthRenderBuffer1); // now actually attach it
-    // now that we actually created the framebuffer and added all attachments we want to check if it is actually complete now
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        LOGE("ERROR::FRAMEBUFFER:: Framebuffer is not complete!");
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        // create a depth attachment texture
+        glGenTextures(1, &skyboxDepthTex2D[i]);
+        glBindTexture(GL_TEXTURE_2D, skyboxDepthTex2D[i]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, WIDTH1, HEIGHT1, 0, GL_RED,  GL_FLOAT, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, skyboxDepthTex2D[i], 0);
+        while((err = glGetError()) != GL_NO_ERROR)
+            LOGE(" WarperGlesInitializer::GenerateFbos() : mSkyboxDepthTex2D err == %d", err);
+        // create a renderbuffer object for depth and stencil attachment (we won't be sampling these)
+        //更接近opengl原生数据结构，当不需要读取(比如glReadPixels)这些数据时效率非常快，一般用来depth test 和stencil test
+//        glGenRenderbuffers(1, &mSkyboxRenderBuffer[i]);
+        glBindRenderbuffer(GL_RENDERBUFFER, mSkyboxRenderBuffer[i]);
+//        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH32F_STENCIL8, WIDTH1, HEIGHT1); // use a single renderbuffer object for both a depth AND stencil buffer.
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, mSkyboxRenderBuffer[i]); // now actually attach it
+        // now that we actually created the framebuffer and added all attachments we want to check if it is actually complete now
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+            LOGE("WarperGlesInitializer::GenerateFbos(): ERROR::FRAMEBUFFER:: Framebuffer is not complete!");
 
+        //不用DrawBuffers，则只会画Attachment0所在的颜色附着。
+//        GLuint attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+//        glDrawBuffers(2, attachments);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
 
     //..............................................................................//
     //......................panorama frame buffer objects...........................//
     //..............................................................................//
+
+    //////////////////////////////////color//////////////////////////////////////////////////
+    glGenFramebuffers(1, &fboPano1);
+    glBindFramebuffer(GL_FRAMEBUFFER, fboPano1);
+
+    // create a color attachment texture
+    glGenTextures(1, &mPanoColorTex2D);
+    glBindTexture(GL_TEXTURE_2D, mPanoColorTex2D);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WIDTH2, HEIGHT2, 0, GL_RGBA,  GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mPanoColorTex2D, 0);
+    while((err = glGetError()) != GL_NO_ERROR)
+        LOGE(" WarperGlesInitializer::GenerateFbos() : mSkyboxColorTex2D err == %d", err);
+
+    // create a renderbuffer object for depth and stencil attachment (we won't be sampling these)
+    //更接近opengl原生数据结构，当不需要读取(比如glReadPixels)这些数据时效率非常快，一般用来depth test 和stencil test
+    glGenRenderbuffers(1, &mPanoRenderBuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, mPanoRenderBuffer);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH32F_STENCIL8, WIDTH2, HEIGHT2); // use a single renderbuffer object for both a depth AND stencil buffer.
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, mPanoRenderBuffer); // now actually attach it
+    // now that we actually created the framebuffer and added all attachments we want to check if it is actually complete now
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        LOGE("WarperGlesInitializer::GenerateFbos(): ERROR::FRAMEBUFFER:: Framebuffer is not complete!");
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+
+    ///////////////////////////////////////depth ///////////////////////////////////////////////
+    glGenFramebuffers(1, &fboPano2);
+    glBindFramebuffer(GL_FRAMEBUFFER, fboPano2);
+
+    // create a color attachment texture
+    glGenTextures(1, &mPanoDepthTex2D);
+    glBindTexture(GL_TEXTURE_2D, mPanoDepthTex2D);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, WIDTH2, HEIGHT2, 0, GL_RED,  GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mPanoDepthTex2D, 0);
+    while((err = glGetError()) != GL_NO_ERROR)
+        LOGE(" WarperGlesInitializer::GenerateFbos() : mSkyboxColorTex2D err == %d", err);
+
+//    glGenRenderbuffers(1, &mPanoRenderBuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, mPanoRenderBuffer);
+//    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH32F_STENCIL8, WIDTH1, HEIGHT1); // use a single renderbuffer object for both a depth AND stencil buffer.
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, mPanoRenderBuffer); // now actually attach it
+    // now that we actually created the framebuffer and added all attachments we want to check if it is actually complete now
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        LOGE("WarperGlesInitializer::GenerateFbos(): ERROR::FRAMEBUFFER:: Framebuffer is not complete!");
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     return 0;
 }
@@ -78,7 +140,7 @@ int WarperGlesInitializer::GenerateShaders()
     //......................skybox color and depth shaders..........................//
     //..............................................................................//
 
-    std::string colorVertexCode1("#version 300 es                                                \n"
+    std::string skyboxVertexCode1("#version 300 es                                                \n"
                                  "precision highp float;                                         \n"
                                  "                                                               \n"
                                  "layout (location = 0) in vec3 attributePos;                    \n"
@@ -98,125 +160,178 @@ int WarperGlesInitializer::GenerateShaders()
                                  "    UV = vec2(attributeUV.xy);                                 \n"
                                  "}                                                              \n");
 
-    std::string colorFragmentCode1("#version 300 es                                                \n"
+    std::string skyboxFragmentCode1("#version 300 es                                                \n"
                                    "precision highp float;                                         \n"
-                                   "                                                               \n"
-                                   "uniform sampler2D colorTexture;                                \n"
-                                   "uniform sampler2D depthTexture;                                \n"
-                                   "                                                               \n"
-                                   "layout(position = 0) out vec4 colorAttachment;                 \n"
-                                   "layout(position = 1) out vec4 depthAttachment;                 \n"
                                    "                                                               \n"
                                    "in vec2 UV;                                                    \n"
                                    "                                                               \n"
-                                   "out vec4 FragColor;                                            \n"
+                                   "uniform sampler2D colorTexture;                                \n"
+                                   "                                                               \n"
+                                   "layout(location = 0) out vec4 colorAttachment;                 \n"
                                    "                                                               \n"
                                    "void main()                                                    \n"
                                    "{                                                              \n"
                                    "    colorAttachment = texture(colorTexture, UV.xy);            \n"
-                                   "    depthAttachment = texture(depthTexture, UV.xy);            \n"
                                    "}                                                              \n");
-//
-//    std::string depthVertexCode1("#version 300 es                                                \n"
-//                                 "precision highp float;                                         \n"
-//                                 "                                                               \n"
-//                                 "layout (location = 0) in vec3 attributePos;                    \n"
-//                                 "layout (location = 1) in vec3 attributeUV;                     \n"
-//                                 "                                                               \n"
-//                                 "uniform mat4 model;                                            \n"
-//                                 "uniform mat4 view;                                             \n"
-//                                 "uniform mat4 projection;                                       \n"
-//                                 "                                                               \n"
-//                                 "out float Radius;                                              \n"
-//                                 "                                                               \n"
-//                                 "void main()                                                    \n"
-//                                 "{                                                              \n"
-//                                 "    vec4 position = view * model * vec4(attributePos, 1.0f);   \n"
-//                                 "    gl_Position = projection * position;                       \n"
-//                                 "                                                               \n"
-//                                 "    Radius = length(position);///300.0f;//如何保证精度？？？？？  \n"
-//                                 "}                                                              \n");
-//    std::string depthFragmentCode1("#version 300 es                                                \n"
-//                                   "precision highp float;                                         \n"
-//                                   "                                                               \n"
-//                                   "                                                               \n"
-//                                   "uniform sampler2D texture1;                                    \n"//决定插值方法（最近邻）
-//                                   "                                                               \n"
-//                                   "in float Radius;                                               \n"
-//                                   "                                                               \n"
-//                                   "out vec4 FragColor;                                            \n"
-//                                   "                                                               \n"
-//                                   "void main()                                                    \n"
-//                                   "{                                                              \n"
-//                                   "    FragColor = vec4(Radius, Radius, Radius, 1.0f);            \n"
-//                                   "}                                                              \n");
-    colorShader1.init(colorVertexCode1, colorFragmentCode1);
-//    depthShader1.init(depthVertexCode1, depthFragmentCode1);
+    std::string skyboxVertexCode2("#version 300 es                                                \n"
+                                 "precision highp float;                                         \n"
+                                 "                                                               \n"
+                                 "layout (location = 0) in vec3 attributePos;                    \n"
+                                 "layout (location = 1) in vec3 attributeUV;                     \n"
+                                 "                                                               \n"
+                                 "uniform mat4 model;                                            \n"
+                                 "uniform mat4 view;                                             \n"
+                                 "uniform mat4 projection;                                       \n"
+                                 "                                                               \n"
+                                 "out vec2 UV;                                                   \n"
+                                 "                                                               \n"
+                                 "void main()                                                    \n"
+                                 "{                                                              \n"
+                                 "    vec4 position = view * model * vec4(attributePos, 1.0f);   \n"
+                                 "    gl_Position = projection * position;                       \n"
+                                 "                                                               \n"
+                                 "    UV = vec2(attributeUV.xy);                                 \n"
+                                 "}                                                              \n");
+
+    std::string skyboxFragmentCode2("#version 300 es                                                \n"
+                                    "precision highp float;                                         \n"
+                                    "                                                               \n"
+                                    "in vec2 UV;                                                    \n"
+                                    "                                                               \n"
+                                    "uniform sampler2D depthTexture;                                \n"
+                                    "                                                               \n"
+                                    "layout(location = 0) out float depthAttachment;                \n"
+                                    "                                                               \n"
+                                    "void main()                                                    \n"
+                                    "{                                                              \n"
+                                    "    depthAttachment = texture(depthTexture, UV.xy).x;          \n"
+                                    "}                                                              \n");
+    //color
+    shaderSkybox1.init(skyboxVertexCode1, skyboxFragmentCode1);
+    //depth
+    shaderSkybox2.init(skyboxVertexCode2, skyboxFragmentCode2);
 
 
 
     //..............................................................................//
     //......................panorama color and depth shaders........................//
     //..............................................................................//
-    std::string panoVertexCode("#version 300 es                                                     \n"
-                               "precision highp float;                                              \n"
-                               "                                                                    \n"
-                               "layout (location = 0) in vec3 attributePos;                         \n"
-                               "layout (location = 1) in vec3 attributeUV;                          \n"
-                               "                                                                    \n"
-                               "uniform mat4 model;                                                 \n"
-                               "uniform mat4 view;                                                  \n"
-                               "uniform int SIDE_LENGTH;                                            \n"
-                               "                                                                    \n"
-                               "out vec2 UV;                                                        \n"
-                               "                                                                    \n"
-                               "void main()                                                         \n"
-                               "{                                                                   \n"
-                               "    int h = gl_InstanceID/SIDE_LENGTH;                              \n"
-                               "    int w = gl_InstanceID%SIDE_LENGTH;                              \n"
-                               "    float tx = float(w-SIDE_LENGTH/2)/float(SIDE_LENGTH);           \n"
-                               "    float ty = float(h-SIDE_LENGTH/2)/float(SIDE_LENGTH);           \n"
-                               "    float tz = 0.5f;                                                \n"
-                               "                                                                    \n"
-                               "    UV = vec2(tx, ty);                                              \n"
-                               "                                                                    \n"
-                               "    vec4 temp = view * model * vec4(tx, ty, tz, 1.0f);              \n"
-                               "    float y = temp.x; float z = temp.y; float x = temp.z;           \n"
-                               "    float r = length(vec3(x,y,z));                                  \n"
-                               "                                                                    \n"
-                               "    float theta_ = acos(z/r);                                       \n"
-                               "    float fa_;                                                      \n"
-                               "                                                                    \n"
-                               "    if(x>0 && y>=0)                                                 \n"
-                               "        fa_ = atan(y/x);                                            \n"
-                               "    else if(x>0 && y<0)                                             \n"
-                               "        fa_ = 2*PI+atan(y/x);                                       \n"
-                               "    else if(x<=0 && y>=0)                                           \n"
-                               "        fa_ = PI + atan(y/x);                                       \n"
-                               "    else                                                            \n"
-                               "        fa_ = PI + atan(y/x);                                       \n"
-                               "                                                                    \n"
-                               "    gl_Position = vec4(1.0-fa_/PI, (0.5-theta_/PI)*2, 0.0, 1.0);    \n"
-                               "                                                                    \n"
-                               "}                                                                   \n");
+    std::string panoVertexCode1("#version 300 es                                                     \n"
+                                "precision highp float;                                              \n"
+                                "                                                                    \n"
+                                "layout (location = 0) in vec3 attributePos;                         \n"
+                                "                                                                    \n"
+                                "uniform mat4 model;                                                 \n"
+                                "uniform mat4 view;                                                  \n"
+                                "uniform int SIDE_LENGTH;                                            \n"
+                                "                                                                    \n"
+                                "out vec2 UV;                                                        \n"
+                                "                                                                    \n"
+                                "void main()                                                         \n"
+                                "{                                                                   \n"
+                                "    const float PI = 3.1415926535897932384626433832795;             \n"
+                                "                                                                    \n"
+                                "    int h = gl_VertexID/SIDE_LENGTH;                                \n"
+                                "    int w = gl_VertexID%SIDE_LENGTH;                                \n"
+                                "    float tx = float(w-SIDE_LENGTH/2)/float(SIDE_LENGTH);           \n"
+                                "    float ty = float(h-SIDE_LENGTH/2)/float(SIDE_LENGTH);           \n"
+                                "    float tz = 0.5f;                                                \n"
+                                "                                                                    \n"
+                                "    UV = vec2(tx, ty);                                              \n"
+                                "                                                                    \n"
+                                "    vec4 temp = view * model * vec4(tx, ty, tz, 1.0f);              \n"
+                                "    float y = temp.x; float z = temp.y; float x = temp.z;           \n"
+                                "    float r = length(vec3(x,y,z));                                  \n"
+                                "                                                                    \n"
+                                "    float theta_ = acos(z/r);                                       \n"
+                                "    float fa_;                                                      \n"
+                                "                                                                    \n"
+                                "    if(x>0.0 && y>=0.0)                                             \n"
+                                "        fa_ = atan(y/x);                                            \n"
+                                "    else if(x>0.0 && y<0.0)                                         \n"
+                                "        fa_ = 2.0*PI+atan(y/x);                                       \n"
+                                "    else if(x<=0.0 && y>=0.0)                                       \n"
+                                "        fa_ = PI + atan(y/x);                                       \n"
+                                "    else                                                            \n"
+                                "        fa_ = PI + atan(y/x);                                       \n"
+                                "                                                                    \n"
+                                "    gl_Position = vec4(1.0-fa_/PI, (0.5-theta_/PI)*2.0, 0.0, 1.0);    \n"
+                                "                                                                    \n"
+                                "}                                                                   \n");
 
-    std::string panoFragmentCode("#version 300 es                                                     \n"
-                                 "precision highp float;                                              \n"
-                                 "                                                                    \n"
-                                 "uniform texture2d colorTexture;                                     \n"
-                                 "uniform texture2d depthTexture;                                     \n"
-                                 "                                                                    \n"
-                                 "in vec2 UV;                                                         \n"
-                                 "                                                                    \n"
-                                 "layout(position = 0) out vec4 colorAttachment;                      \n"
-                                 "layout(position = 1) out vec4 depthAttachment;                      \n"
-                                 "                                                                    \n"
-                                 "void main()                                                         \n"
-                                 "{                                                                   \n"
-                                 "    colorAttachment = texture(colorTexture, UV.xy);                 \n"
-                                 "    depthAttachment = texture(depthTexture, UV.xy);                 \n"
-                                 "}                                                                   \n");
+    std::string panoFragmentCode1("#version 300 es                                                     \n"
+                                  "precision highp float;                                              \n"
+                                  "                                                                    \n"
+                                  "uniform sampler2D colorTexture;                                     \n"
+                                  "                                                                    \n"
+                                  "in vec2 UV;                                                         \n"
+                                  "                                                                    \n"
+                                  "layout(location = 0) out vec4 colorAttachment;                      \n"
+                                  "                                                                    \n"
+                                  "void main()                                                         \n"
+                                  "{                                                                   \n"
+                                  "    colorAttachment = texture(colorTexture, UV.xy);                 \n"
+                                  "}                                                                   \n");
 
+    std::string panoVertexCode2("#version 300 es                                                     \n"
+                                "precision highp float;                                              \n"
+                                "                                                                    \n"
+                                "layout (location = 0) in vec3 attributePos;                         \n"
+                                "                                                                    \n"
+                                "uniform mat4 model;                                                 \n"
+                                "uniform mat4 view;                                                  \n"
+                                "uniform int SIDE_LENGTH;                                            \n"
+                                "                                                                    \n"
+                                "out vec2 UV;                                                        \n"
+                                "                                                                    \n"
+                                "void main()                                                         \n"
+                                "{                                                                   \n"
+                                "    const float PI = 3.1415926535897932384626433832795;             \n"
+                                "                                                                    \n"
+                                "    int h = gl_VertexID/SIDE_LENGTH;                                \n"
+                                "    int w = gl_VertexID%SIDE_LENGTH;                                \n"
+                                "    float tx = float(w-SIDE_LENGTH/2)/float(SIDE_LENGTH);           \n"
+                                "    float ty = float(h-SIDE_LENGTH/2)/float(SIDE_LENGTH);           \n"
+                                "    float tz = 0.5f;                                                \n"
+                                "                                                                    \n"
+                                "    UV = vec2(tx, ty);                                              \n"
+                                "                                                                    \n"
+                                "    vec4 temp = view * model * vec4(tx, ty, tz, 1.0f);              \n"
+                                "    float y = temp.x; float z = temp.y; float x = temp.z;           \n"
+                                "    float r = length(vec3(x,y,z));                                  \n"
+                                "                                                                    \n"
+                                "    float theta_ = acos(z/r);                                       \n"
+                                "    float fa_;                                                      \n"
+                                "                                                                    \n"
+                                "    if(x>0.0 && y>=0.0)                                             \n"
+                                "        fa_ = atan(y/x);                                            \n"
+                                "    else if(x>0.0 && y<0.0)                                         \n"
+                                "        fa_ = 2.0*PI+atan(y/x);                                       \n"
+                                "    else if(x<=0.0 && y>=0.0)                                       \n"
+                                "        fa_ = PI + atan(y/x);                                       \n"
+                                "    else                                                            \n"
+                                "        fa_ = PI + atan(y/x);                                       \n"
+                                "                                                                    \n"
+                                "    gl_Position = vec4(1.0-fa_/PI, (0.5-theta_/PI)*2.0, 0.0, 1.0);    \n"
+                                "                                                                    \n"
+                                "}                                                                   \n");
+
+    std::string panoFragmentCode2("#version 300 es                                                     \n"
+                                  "precision highp float;                                              \n"
+                                  "                                                                    \n"
+                                  "uniform sampler2D depthTexture;                                     \n"
+                                  "                                                                    \n"
+                                  "in vec2 UV;                                                         \n"
+                                  "                                                                    \n"
+                                  "layout(location = 0) out vec4 depthAttachment;                      \n"
+                                  "                                                                    \n"
+                                  "void main()                                                         \n"
+                                  "{                                                                   \n"
+                                  "    depthAttachment = texture(depthTexture, UV.xy);                 \n"
+                                  "}                                                                   \n");
+
+    shaderPano1.init(panoVertexCode1, panoFragmentCode1);
+    shaderPano2.init(panoVertexCode2, panoFragmentCode2);
     return 0;
 }
 
@@ -241,12 +356,12 @@ int WarperGlesInitializer::InitializeGlesSrcs()
 int WarperGlesInitializer::ReleaseGlesSrcs()
 {
     //release skybox resources...
-    glDeleteRenderbuffers(1, &mColorRenderBuffer1);
-    glDeleteRenderbuffers(1, &mDepthRenderBuffer1);
-    glDeleteTextures(1, &mColorTex2D1);
-    glDeleteTextures(1, &mDepthTex2D1);
-    glDeleteFramebuffers(1, &fboColor1);
-    glDeleteFramebuffers(1, &fboDepth1);
+//    glDeleteRenderbuffers(1, &mColorRenderBuffer1);
+//    glDeleteRenderbuffers(1, &mDepthRenderBuffer1);
+//    glDeleteTextures(1, &mColorTex2D1);
+//    glDeleteTextures(1, &mDepthTex2D1);
+//    glDeleteFramebuffers(1, &fboColor1);
+//    glDeleteFramebuffers(1, &fboDepth1);
 
     //release panorama resources...
     //todo
@@ -255,6 +370,7 @@ int WarperGlesInitializer::ReleaseGlesSrcs()
 
 WarperGlesInitializer::WarperGlesInitializer():
 WIDTH1(i3d::PANO_H), HEIGHT1(i3d::PANO_H), WIDTH2(i3d::PANO_W), HEIGHT2(i3d::PANO_H)
+
 {
     InitializeGlesSrcs();
 }

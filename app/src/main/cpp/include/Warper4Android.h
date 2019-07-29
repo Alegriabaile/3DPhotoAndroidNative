@@ -26,16 +26,28 @@ private:
                         std::vector<cv::Mat> &images,
                         std::vector<cv::Mat> &depths);
 
-    int GeneratePoints( const std::vector<cv::Mat> &images,
-                        const std::vector<cv::Mat> &depths,
-                        std::vector<std::vector<float>> &vPoints);
+    int GeneratePoints( std::vector<float> &vPoints);
 
     int GeneratePanorama(const std::vector<cv::Mat> &images,
                          const std::vector<cv::Mat> &depths,
                          const i3d::Frame &frame);
 
 
+    int InitializeReusable();
+    void SKYBOX_GEN_VAO_TEXTURE_MVP(const i3d::Frame &frame, const std::vector<float> &vertices);
+    //void FREE_VAO_TEXTURE();
     int WarpToPanorama(i3d::Frame& kframe, i3d::Intrinsics& intrinsics);
+
+
+    glm::mat4 skyboxModel, skyboxViews[6], skyboxProjection;
+    GLuint skyboxVAO, skyboxVBO, skyboxColorTexture, skyboxDepthTexture;
+
+
+    glm::mat4 panoModels[6], panoView, projection2;
+    GLuint panoVAO, panoVBO, panoColorTexture, panoDepthTexture;
+
+    double minV, maxV;
+    GLenum err;
 public:
     Warper4Android(std::vector<i3d::Frame>& kframes, i3d::Intrinsics& intrinsics);
     ~Warper4Android();
