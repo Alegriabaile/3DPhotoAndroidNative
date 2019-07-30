@@ -30,7 +30,7 @@ private:
 
     int GeneratePanorama(const std::vector<cv::Mat> &images,
                          const std::vector<cv::Mat> &depths,
-                         const i3d::Frame &frame);
+                         i3d::Frame &frame);
 
 
     int InitializeReusable();
