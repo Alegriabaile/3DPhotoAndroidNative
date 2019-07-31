@@ -25,7 +25,7 @@ public:
     GLuint fboSkybox1[6], fboSkybox2[6], fboPano1, fboPano2;
     Shader shaderSkybox1, shaderSkybox2, shaderPano1, shaderPano2;
 
-
+    GLuint attachments[6];
     WarperGlesInitializer();
     ~WarperGlesInitializer();
 

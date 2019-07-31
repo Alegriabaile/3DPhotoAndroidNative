@@ -46,6 +46,10 @@ private:
     glm::mat4 panoModels[6], panoView, projection2;
     GLuint panoVAO, panoVBO, panoColorTexture, panoDepthTexture;
 
+
+    GLuint inputFramebuffer, inputColorTexture, inputDepthTexture, inputRenderbuffer;
+
+
     double minV, maxV;
     GLenum err;
 public:
