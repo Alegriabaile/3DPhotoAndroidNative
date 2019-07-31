@@ -225,6 +225,7 @@ int Warper4Android::GenerateSkybox(const i3d::Frame &frame, const std::vector<fl
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
+
     return 0;
 }
 
