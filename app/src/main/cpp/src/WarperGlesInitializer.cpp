@@ -50,7 +50,6 @@ int WarperGlesInitializer::GenerateFbos()
             LOGE("WarperGlesInitializer::GenerateFbos(): ERROR::FRAMEBUFFER:: Framebuffer is not complete!");
 
         //不用DrawBuffers，则只会画Attachment0所在的颜色附着。
-
         glDrawBuffers(2, attachments);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);

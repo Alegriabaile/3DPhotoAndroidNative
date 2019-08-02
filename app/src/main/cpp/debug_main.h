@@ -19,10 +19,10 @@
 
 #include "DProblem1.h"
 //#include "Pers2PanoWarper.h"
-//#include "stitchAllPanos.h"
+#include "stitchAllPanos.h"
 
 
-int debug_initInputData(std::string root_dir, std::vector<i3d::Frame> &kframes)
+int debug_initInputData(std::string root_dir, std::vector<i3d::Frame> &kframes, i3d::Intrinsics& intrinsics)
 {
     using namespace std;
     using namespace cv;
@@ -30,11 +30,20 @@ int debug_initInputData(std::string root_dir, std::vector<i3d::Frame> &kframes)
 
     LOGW("[                                     ]");
     LOGW("[                                     ]");
-    std::vector<i3d::Frame> frames;
+//    std::vector<i3d::Frame> frames;
     LOGW("start initFrames");
-    Intrinsics intrinsics;
-    initFrames(root_dir, frames, intrinsics);
+//    Intrinsics intrinsics;
+    initFrames(root_dir, kframes, intrinsics);
     LOGW("finish initFrames");
+    return 0;
+}
+
+
+int debug_estimatePoses(std::vector<i3d::Frame> &frames, i3d::Intrinsics& intrinsics)
+{
+    using namespace std;
+    using namespace cv;
+    using namespace i3d;
 
     LOGW("[                                     ]");
     LOGW("[                                     ]");
@@ -68,7 +77,7 @@ int debug_initInputData(std::string root_dir, std::vector<i3d::Frame> &kframes)
     vector<Edge> kedges;
     genGlobalByMst(edges, tkframes, kedges);
     //generate the key frames that contribute to connected graph.
-    //vector<Frame> kframes;
+    vector<Frame> kframes;
     LOGW("start genKeyFrames2...");
     genKeyFrames(tkframes, kedges, kframes);
     LOGW("finish genKeyFrames2...");
@@ -87,6 +96,14 @@ int debug_initInputData(std::string root_dir, std::vector<i3d::Frame> &kframes)
     DProblem1 rigidProblem(kframes, kedges, intrinsics, 2, 2, 10);
     LOGW("finish solveProblem...");
 
+    frames = kframes;
+
+    return 0;
+}
+
+int debug_warpToPanoramas(std::vector<i3d::Frame> &kframes, i3d::Intrinsics& intrinsics)
+{
+
     LOGW("[                                     ]");
     LOGW("[                                     ]");
     //*********gles warp perspective frames to panorama   *************//
@@ -97,5 +114,44 @@ int debug_initInputData(std::string root_dir, std::vector<i3d::Frame> &kframes)
     return 0;
 }
 
+
+int debug_stitchAllPanos(std::vector<i3d::Frame> &kframes, i3d::Frame& pano)
+{
+    LOGW("[                                     ]");
+    LOGW("[                                     ]");
+    //*********gles warp perspective frames to panorama   *************//
+    LOGW("start stitchAllPanos...");
+    stitchAllPanos(kframes, pano);
+    LOGW("finish stitchAllPanos...");
+
+    return 0;
+}
+
+
+int debug_main(std::string root_dir, std::vector<i3d::Frame> &kframes)
+{
+    using namespace std;
+    using namespace cv;
+    using namespace i3d;
+
+    Intrinsics intrinsics;
+    debug_initInputData(root_dir, kframes, intrinsics);
+
+
+    debug_estimatePoses(kframes, intrinsics);
+
+
+    debug_warpToPanoramas(kframes, intrinsics);
+
+
+
+    Frame pano;
+    debug_stitchAllPanos(kframes, pano);
+
+    string res_pano_color = root_dir + string("/debug_res_pano/pano_color.jpg");
+    imwrite(res_pano_color, pano.pano_image);
+
+    return 0;
+}
 
 #endif //NATIVE0701_DEBUG_INITINPUTDATA_H

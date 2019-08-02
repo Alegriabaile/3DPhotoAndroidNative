@@ -2,7 +2,6 @@
 // Created by ale on 19-2-19.
 //
 #include "stitchAllPanos.h"
-#include "guided-filter/guidedfilter.h"
 
 using namespace std;
 using namespace cv;
@@ -162,6 +161,7 @@ static int GenPanoLabels(vector<Frame>& kframes, Frame& pano)
     return 0;
 }
 
+/*
 //feathering........
 static int GenSoftMask(const Frame & pano, const int iLabel,  Frame& frame)
 {
@@ -230,7 +230,7 @@ static int GenSoftMask(const Frame & pano, const int iLabel,  Frame& frame)
             {
                 float l = frame.mask_label.at<float>(h,w);
                 float b = frame.mask_bound.at<float>(h,w);
-                frame.soft_mask.at<float>(h,w) = std::fmin(l, b);
+//                frame.soft_mask.at<float>(h,w) = std::fmin(l, b);
             }
         }
     }
@@ -242,6 +242,7 @@ static int GenSoftMask(const Frame & pano, const int iLabel,  Frame& frame)
 
     return 0;
 }
+
 static int GenSoftMasks( const Frame& pano, vector<Frame>& kframes)
 {
     for(int i=0; i<kframes.size(); ++i)
@@ -249,6 +250,9 @@ static int GenSoftMasks( const Frame& pano, vector<Frame>& kframes)
 
     return 0;
 }
+*/
+
+
 
 int stitchAllPanos(vector<Frame>& kframes, Frame& pano)
 {
@@ -284,9 +288,6 @@ int stitchAllPanos(vector<Frame>& kframes, Frame& pano)
     pano.minh = minh; pano.minw = minw;
     pano.maxh = maxh; pano.maxw = maxw;
     GenPanoLabels(kframes, pano);
-
-
-
 
     /////////////////////////////////feathering//////////////////////////////
     /*

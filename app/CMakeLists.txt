@@ -44,7 +44,7 @@ file(GLOB I3D_SRCS
         src/main/cpp/src/WarperGlesInitializer.cpp
         src/main/cpp/src/Warper4Android.cpp
         #src/Pers2PanoWarper.cpp
-        #src/stitchAllPanos.cpp
+        src/main/cpp/src/stitchAllPanos.cpp
 
         #src/genCompactTri.cpp
         )

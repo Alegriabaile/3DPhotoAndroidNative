@@ -4,7 +4,7 @@
 #include <jni.h>
 #include <android/bitmap.h>
 #include <android/log.h>
-#include "debug_initInputData.h"
+#include "debug_main.h"
 
 #ifndef TAG_MY_LOG
 #define TAG_MY_LOG
@@ -41,7 +41,7 @@ Java_i3d_native0701_MainActivity_getImage(JNIEnv *env, jclass, jobject bitmap) {
     if(isInit)
     {
         LOGW("debug_initInputData start.........");
-        debug_initInputData(root_dir, frames);
+        debug_main(root_dir, frames);
         isInit = false;
         LOGW("debug_initInputData finished.............");
     }
