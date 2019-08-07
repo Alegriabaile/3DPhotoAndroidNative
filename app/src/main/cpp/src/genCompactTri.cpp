@@ -118,15 +118,18 @@ static int GenerateTwoLayerContents(i3d::Frame& pano, const int icount=30)
 
     //color inpainting
     cv::Mat mask = (depth_f<=1e-6f);
-    inpaint(image_f, mask, image_f, 3, CV_INPAINT_NS);
-    mask = depth_b > 0;
+//    inpaint(image_f, mask, image_f, 3, CV_INPAINT_NS);
+    mask = depth_b > 0.0f;
     inpaint(image_f, mask, image_b, 3, CV_INPAINT_NS);
+    mask = mask==0;
+    image_b.setTo(Vec3b(0,0,0), mask);
 
     pano.pano_image = image_f;
     pano.pano_depth = depth_f;
     pano.pano_image_b = image_b;
     pano.pano_depth_b = depth_b;
 
+    //小心越界。。。尤其是下标
     pano.minh -= icount;
     pano.minw -= icount;
     pano.maxh += icount;
@@ -135,11 +138,15 @@ static int GenerateTwoLayerContents(i3d::Frame& pano, const int icount=30)
 
     //debug
 
-    imshow("image_f", image_f);
-    imshow("depth_f", depth_f);
-    imshow("image_b", image_b);
-    imshow("depth_b", depth_b);
-    waitKey();//*/
+//    imshow("image_f", image_f);
+//    imshow("depth_f", depth_f);
+//    imshow("image_b", image_b);
+//    imshow("depth_b", depth_b);
+//    waitKey();//*/
+
+
+    if(pano.minh<0 || pano.minw<0 || pano.maxh>=i3d::PANO_H || pano.maxw>=i3d::PANO_W)
+        return -3;
     return 0;
 }
 
@@ -197,18 +204,122 @@ static int GenerateCompactTriangles(const cv::Mat& pano_depth, std::vector<cv::P
     return 0;
 }//end of GenerateCompactTriangles
 
+
 int genCompactTri(const std::string& outputDir, i3d::Frame& pano, const int icount)
 {
     vector<Point> triangles_f, triangles_b;
-    vector<Point> contour_edges;
+//    vector<Point> contour_edges;
 
-    GenerateTwoLayerContents(pano);
+    if(GenerateTwoLayerContents(pano)!=0)
+    {
+        LOGE("genCompactTri(): GenerateTwoLayerContents(): min max h w out of range...No triangles generated.");
+        return -3;
+    }
+
 
     GenerateCompactTriangles(pano.pano_depth, triangles_f);
     GenerateCompactTriangles(pano.pano_depth_b, triangles_b);
 
-    cout<<"f tri size(): "<<triangles_f.size()<<".  b tri size(): "<<triangles_b.size()<<endl;
+//    cout<<"f tri size(): "<<triangles_f.size()<<".  b tri size(): "<<triangles_b.size()<<endl;
+    LOGE("f tri size(): %d;      b tri size(): %d   ", triangles_f.size(), triangles_b.size());
     //WriteFbToObj(pano, triangles_f, triangles_b, outputDir);
     WriteFbToTxt(pano, triangles_f, triangles_b, outputDir);
+    return 0;
+}
+
+
+
+static int GenerateResults(const i3d::Frame& pano, const std::vector<cv::Point>& triangles_f, const std::vector<cv::Point>& triangles_b,
+                           cv::Mat & f_b_texture, std::vector<float>& f_b_vertices)
+{
+    using namespace std;
+    using namespace cv;
+
+    int minw = pano.minw;
+    int minh = pano.minh;
+    int maxw = pano.maxw;
+    int maxh = pano.maxh;
+    const cv::Mat pano_image = pano.pano_image.clone();//(cv::Range(minh, maxh+1), cv::Range(minw, maxw+1)).clone();
+    const cv::Mat pano_depth = pano.pano_depth;//(cv::Range(minh, maxh+1), cv::Range(minw, maxw+1)).clone();
+    const cv::Mat pano_depth_b = pano.pano_depth_b;
+    const cv::Mat pano_image_b = pano.pano_image_b;
+
+
+    f_b_vertices.clear();
+    f_b_vertices.reserve((triangles_b.size()+triangles_f.size())*5);
+
+    float theta, phi, r;//theta:0-180, phi:0-360
+    float x, y, z, u, v;
+    //front vertices
+    for(int i=0; i<triangles_f.size(); ++i)
+    {
+        cv::Point pt = triangles_f[i];
+        r = pano_depth.at<float>(pt.y, pt.x);
+        theta = float(pt.y+minh+0.5)/float(i3d::PANO_H)*M_PI;
+        phi = float(pt.x+minw+0.5)/float(i3d::PANO_W)*M_PI*2;
+
+        x = r*sin(theta)*sin(2*M_PI-phi);
+        y = -r*cos(theta);
+        z = -r*sin(theta)*cos(2*M_PI-phi);
+        u = float(pt.x) / float(maxw - minw);
+        v = 1 - float(pt.y) / float(maxh - minh)/2.0f;
+
+        f_b_vertices.push_back(x); f_b_vertices.push_back(y); f_b_vertices.push_back(z);
+        f_b_vertices.push_back(u); f_b_vertices.push_back(v);
+    }
+    //back vertices
+    for(int i=0; i<triangles_b.size(); ++i)
+    {
+        cv::Point pt = triangles_b[i];
+        r = pano_depth_b.at<float>(pt.y, pt.x);
+        theta = float(pt.y+minh+0.5)/float(i3d::PANO_H)*M_PI;
+        phi = float(pt.x+minw+0.5)/float(i3d::PANO_W)*M_PI*2;
+
+        x = r*sin(theta)*sin(2*M_PI-phi);
+        y = -r*cos(theta);
+        z = -r*sin(theta)*cos(2*M_PI-phi);
+        u = float(pt.x) / float(maxw - minw);
+        v = 1 - ( float(pt.y) / float(maxh - minh)/2.0f+0.5f );
+
+        f_b_vertices.push_back(x); f_b_vertices.push_back(y); f_b_vertices.push_back(z);
+        f_b_vertices.push_back(u); f_b_vertices.push_back(v);
+    }
+
+
+    cv::Mat multilayer_texture(pano_image.rows*2, pano_image.cols, CV_8UC3, Scalar(0,0,0));
+    cv::Mat Roi_f = multilayer_texture(Rect(0, 0, pano_image.cols, pano_image.rows));//x, y, w, h
+    cv::Mat Roi_b = multilayer_texture(Rect(0, pano_image.rows, pano_image.cols, pano_image.rows));
+    pano_image.copyTo(Roi_f);
+    pano_image_b.copyTo(Roi_b);
+    f_b_texture = multilayer_texture;
+
+    return 0;
+}
+//f_b_vertices:
+// vertice0 = [x0,y0,z0,u0,v0].
+// triangle0 = [vertices0, vertices1, vertices2].
+// num_of_triangles = f_b_vertices.size()/(5*3)
+int genCompactTri(i3d::Frame& pano, cv::Mat & f_b_texture, std::vector<float>& f_b_vertices, const int icount)
+{
+    vector<Point> triangles_f, triangles_b;
+//    vector<Point> contour_edges;
+
+    if(GenerateTwoLayerContents(pano)!=0)
+    {
+        LOGE("genCompactTri(): GenerateTwoLayerContents(): min max h w out of range...No triangles generated.");
+        return -3;
+    }
+
+
+    GenerateCompactTriangles(pano.pano_depth, triangles_f);
+    GenerateCompactTriangles(pano.pano_depth_b, triangles_b);
+
+//    cout<<"f tri size(): "<<triangles_f.size()<<".  b tri size(): "<<triangles_b.size()<<endl;
+    LOGE("f tri size(): %d;      b tri size(): %d   ", triangles_f.size(), triangles_b.size());
+    //WriteFbToObj(pano, triangles_f, triangles_b, outputDir);
+
+
+//    WriteFbToTxt(pano, triangles_f, triangles_b, outputDir);
+    GenerateResults(pano, triangles_f, triangles_b, f_b_texture, f_b_vertices);
     return 0;
 }

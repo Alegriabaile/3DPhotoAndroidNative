@@ -20,6 +20,7 @@
 #include "DProblem1.h"
 //#include "Pers2PanoWarper.h"
 #include "stitchAllPanos.h"
+#include "genCompactTri.h"
 
 
 int debug_initInputData(std::string root_dir, std::vector<i3d::Frame> &kframes, i3d::Intrinsics& intrinsics)
@@ -128,6 +129,12 @@ int debug_stitchAllPanos(std::vector<i3d::Frame> &kframes, i3d::Frame& pano)
 }
 
 
+int debug_genCompactTri()
+{
+
+}
+
+
 int debug_main(std::string root_dir, std::vector<i3d::Frame> &kframes)
 {
     using namespace std;
@@ -150,6 +157,13 @@ int debug_main(std::string root_dir, std::vector<i3d::Frame> &kframes)
 
     string res_pano_color = root_dir + string("/debug_res_pano/pano_color.jpg");
     imwrite(res_pano_color, pano.pano_image);
+
+//    string tri_out_dir = root_dir + string("/debug_compact_tri");
+//    genCompactTri(tri_out_dir, pano);//icount==30
+
+    Mat finalTexture;
+    vector<float> finalArray;
+    genCompactTri(pano, finalTexture, finalArray);
 
     return 0;
 }

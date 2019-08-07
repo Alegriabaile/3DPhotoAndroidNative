@@ -46,7 +46,7 @@ file(GLOB I3D_SRCS
         #src/Pers2PanoWarper.cpp
         src/main/cpp/src/stitchAllPanos.cpp
 
-        #src/genCompactTri.cpp
+        src/main/cpp/src/genCompactTri.cpp
         )
 add_library(i3d STATIC ${I3D_SRCS})
 SET_TARGET_PROPERTIES(i3d PROPERTIES COMPILE_FLAGS "-O2 -DNDEBUG")
