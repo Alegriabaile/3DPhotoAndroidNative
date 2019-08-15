@@ -6,7 +6,6 @@
 #ifndef I3D_SHADER_H
 #define I3D_SHADER_H
 
-#include <glad/glad.h>
 #include <glm/glm.hpp>
 
 #include <string>

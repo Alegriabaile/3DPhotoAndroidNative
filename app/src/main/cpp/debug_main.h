@@ -132,10 +132,11 @@ int debug_stitchAllPanos(std::vector<i3d::Frame> &kframes, i3d::Frame& pano)
 int debug_genCompactTri()
 {
 
+    return 0;
 }
 
 
-int debug_main(std::string root_dir, std::vector<i3d::Frame> &kframes)
+int debug_main(std::string root_dir, std::vector<i3d::Frame> &kframes, std::vector<float>& vertices, cv::Mat& texture)
 {
     using namespace std;
     using namespace cv;
@@ -161,9 +162,9 @@ int debug_main(std::string root_dir, std::vector<i3d::Frame> &kframes)
 //    string tri_out_dir = root_dir + string("/debug_compact_tri");
 //    genCompactTri(tri_out_dir, pano);//icount==30
 
-    Mat finalTexture;
-    vector<float> finalArray;
-    genCompactTri(pano, finalTexture, finalArray);
+//    Mat finalTexture;
+//    vector<float> finalArray;
+    genCompactTri(pano, texture, vertices);
 
     return 0;
 }

@@ -47,6 +47,9 @@ file(GLOB I3D_SRCS
         src/main/cpp/src/stitchAllPanos.cpp
 
         src/main/cpp/src/genCompactTri.cpp
+
+#        viewer...
+        src/main/cpp/viewer/Renderer.cpp
         )
 add_library(i3d STATIC ${I3D_SRCS})
 SET_TARGET_PROPERTIES(i3d PROPERTIES COMPILE_FLAGS "-O2 -DNDEBUG")

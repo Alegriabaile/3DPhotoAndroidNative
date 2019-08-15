@@ -1,24 +1,15 @@
 #ifndef NATIVE0618_NATIVE_LIB_CPP
 #define NATIVE0618_NATIVE_LIB_CPP
 
+
 #include <jni.h>
 #include <android/bitmap.h>
 #include <android/log.h>
+
+
 #include "debug_main.h"
-
-#ifndef TAG_MY_LOG
-#define TAG_MY_LOG
-
-#define TAG "...................TAG_MY_LOG..................."
-#define LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, TAG, __VA_ARGS__)
-#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, TAG, __VA_ARGS__)
-#define LOGI(...) __android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__)
-#define LOGW(...) __android_log_print(ANDROID_LOG_WARN, TAG, __VA_ARGS__)
-#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
-//#undef TAG
-
-#endif
-
+#include "3d_results.h"
+#include "viewer/Renderer.h"
 
 
 #ifdef __cplusplus
@@ -27,22 +18,86 @@ extern "C"
 #endif
 
 JNIEXPORT jint JNICALL
-Java_i3d_native0701_MainActivity_getImage(JNIEnv *env, jclass, jobject bitmap) {
+Java_i3d_native0701_MainActivity_getImage(JNIEnv *env, jclass, jobject bitmap, jstring javaString) {
 
     //cv::Mat image = cv::imread("/storage/emulated/0/DCIM/Camera/test.png", cv::IMREAD_UNCHANGED);
     using namespace cv;
     using namespace std;
     using namespace i3d;
 
-    static bool isInit = true;
     static int index = 0;
+    static string root_dir;
     static vector<Frame> frames;
-    string root_dir("/sdcard/000i3d2");
-    if(isInit)
+
+    jboolean isCopy;
+    const char* str;
+    str = (*env).GetStringUTFChars(javaString, &isCopy);
+    string root_dir_(str);
+    delete[] str;
+
+    bool debug_glsurfaceview = true;
+    if(!debug_glsurfaceview)
     {
+        vertices = {
+                //front face
+                -1, 1, 1, 0.25, 0.33,
+                1, 1, 1, 0.5,  0.33,
+                1, -1, 1, 0.5, 0.66,
+//                1, -1, 1, 0.5, 0.66,
+//                -1, -1, 1, 0.25, 0.66,
+//                -1, 1, 1, 0.25, 0.33,
+//                //right face
+//                1, 1, 1, 0.5, 0.33,
+//                1, 1, -1, 0.75, 0.33,
+//                1, -1, -1, 0.75, 0.66,
+//                1, -1, -1, 0.75, 0.66,
+//                1, -1, 1, 0.5, 0.66,
+//                1, 1, 1, 0.5, 0.33,
+//                //back face
+//                1, 1, -1, 0.75, 0.33,
+//                -1, 1, -1, 1.0, 0.33,
+//                -1, -1, -1, 1.0, 0.66,
+//                -1, -1, -1, 1.0, 0.66,
+//                1, -1, -1, 0.75, 0.66,
+//                1, 1, -1, 0.75, 0.33,
+//                //left face
+//                -1, 1, -1, 0.0, 0.33,
+//                -1, 1, 1, 0.25, 0.33,
+//                -1, -1, 1, 0.25, 0.66,
+//                -1, -1, 1, 0.25, 0.66,
+//                -1, -1, -1, 0.0, 0.66,
+//                -1, 1, -1, 0.0, 0.33,
+//                //top face
+//                -1, -1, 1, 0.25, 0.66,
+//                1, -1, 1, 0.5, 0.66,
+//                1, -1, -1, 0.5, 1.0,
+//                1, -1, -1, 0.5, 1.0,
+//                -1, -1, -1, 0.25, 1.0,
+//                -1, -1, 1, 0.25, 0.66,
+//                //bottom face
+//                -1, 1, -1, 0.25, 0.0,
+//                1, 1, -1, 0.5, 0.0,
+//                1, 1, 1, 0.5, 0.33,
+//                1, 1, 1, 0.5, 0.33,
+//                -1, 1, 1, 0.25, 0.33,
+//                -1, 1, -1, 0.25, 0.0,
+        };
+
+        texture = cv::Mat(800, 800, CV_8UC3, Scalar(0, 0, 255, 0));
+        if(frames.empty())
+        {
+            Frame frame;
+            frame.image = texture.clone();
+            frames.push_back(frame);
+        }
+
+    }
+    else
+    if(root_dir.empty() || root_dir.compare(root_dir_))
+    {
+        root_dir.assign(root_dir_.begin(), root_dir_.end());
         LOGW("debug_initInputData start.........");
-        debug_main(root_dir, frames);
-        isInit = false;
+        debug_main(root_dir, frames, vertices, texture);
         LOGW("debug_initInputData finished.............");
     }
 
@@ -62,9 +117,64 @@ Java_i3d_native0701_MainActivity_getImage(JNIEnv *env, jclass, jobject bitmap) {
     return frames.size();
 }
 
+
+
+
+
+//viewer
+Renderer renderer;
+
+JNIEXPORT void JNICALL
+Java_i3d_native0701_GLUtils_initialize(JNIEnv *env, jclass)
+{
+    renderer.initialize(vertices, texture);
+}
+
+JNIEXPORT jboolean JNICALL
+Java_i3d_native0701_GLUtils_isInitialized(JNIEnv *env, jclass)
+{
+    return renderer.isInitialized();
+}
+
+JNIEXPORT void JNICALL
+Java_i3d_native0701_GLUtils_reshape(JNIEnv *env, jclass, jint width, jint height)
+{
+    renderer.reshape(width, height);
+}
+
+JNIEXPORT void JNICALL
+Java_i3d_native0701_GLUtils_display(JNIEnv *env, jclass)
+{
+    renderer.display();
+}
+
+JNIEXPORT void JNICALL
+Java_i3d_native0701_GLUtils_translateCamera(JNIEnv *env, jclass, jint camera_Movement, jfloat step)
+{
+    renderer.translateCamera(camera_Movement, step);
+}
+
+JNIEXPORT void JNICALL
+Java_i3d_native0701_GLUtils_rotateCamera(JNIEnv *env, jclass, jfloat xoffset, jfloat yoffset)
+{
+    renderer.rotateCamera(xoffset, yoffset);
+}
+
+JNIEXPORT void JNICALL
+Java_i3d_native0701_GLUtils_resetPose(JNIEnv *env, jclass)
+{
+    renderer.resetCamera();
+}
+
+
+
+
+
 #ifdef __cplusplus
 }
-#endif
+#endif//extern "C"
+
+
 
 
 #endif //NATIVE0618_NATIVE_LIB_CPP

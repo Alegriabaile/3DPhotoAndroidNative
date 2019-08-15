@@ -27,7 +27,17 @@ public:
     // ------------------------------------------------------------------------
     Shader():ID(0)
     {
+    }
 
+    void clear()
+    {
+        glDeleteProgram(ID);
+        ID = 0;
+    }
+    ~Shader()
+    {
+        if(glIsProgram(ID))
+            clear();
     }
 
     int init(std::string vertexCode, std::string fragmentCode)
@@ -95,10 +105,7 @@ public:
     {
         glUseProgram(ID);
     }
-    void clear()
-    {
-        glDeleteProgram(ID);
-    }
+
     // utility uniform functions
     // ------------------------------------------------------------------------
     void setBool(const std::string &name, bool value) const
@@ -184,5 +191,7 @@ private:
             }
         }
     }
+
+
 };
 #endif //NATIVE0701_SHADER4ANDROID_H
