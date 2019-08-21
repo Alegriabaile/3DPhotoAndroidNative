@@ -2,7 +2,6 @@
 // Created by ale on 18-12-19.
 //
 
-#include <i3d.h>
 #include "genFeatures.h"
 
 using namespace std;
@@ -25,17 +24,15 @@ namespace i3d
 
         Size size = gray.size();
         double scale_min = 0.05;
-        double scale_max = 1-2*scale_min;//20190430
 
         //ROI感兴趣区域，即去除一定的边界
-        //Rect: o.x, o.y, width, height
-        Rect roi(size.width*scale_min, size.height*scale_min, size.width*scale_max, size.height*scale_max);
+        Rect roi(size.width*scale_min, size.height*scale_min, size.width*(1.0-2.0*scale_min), size.height*(1.0-2.0*scale_min));
         Mat mask = Mat::zeros(size, CV_8UC1);
         mask(roi).setTo(255);
         //深度值为0的不在考虑中，同时要考虑边界
         Mat depth_resize;
         resize(depth, depth_resize, size);
-        mask = (depth_resize > 1e-6f) & (depth_resize < 500.0f) & mask;
+        mask = (depth_resize > 1e-6) & mask;
 
         goodFeaturesToTrack(gray,//输入图像
                             p2f,//检测到的角点的输出向量
@@ -47,7 +44,7 @@ namespace i3d
                             false,//不使用Harris角点检测
                             k);//权重系数
 
-        const float keypoint_diameter = 15.0f;
+        const float keypoint_diameter = 1.0f;
         for (vector<Point2f>::iterator i = p2f.begin(); i<p2f.end(); i++)
             keypoints.push_back(KeyPoint(i->x, i->y, keypoint_diameter));
 
@@ -60,14 +57,6 @@ namespace i3d
         for(int i=0; i<frames.size(); ++i)
         {
             ComputeKeypointsAndDescriptor(frames[i].image, frames[i].depth, frames[i].keypoints, frames[i].descriptor);
-            string str;
-            str.append("frames[").append(to_string(i)).append("].keypoints.size(): ").append(to_string(frames[i].keypoints.size()));
-            LOGW("##########debug genFeatures(): %s ", str.c_str());
-
-            string str1;
-            str1.append("frames[").append(to_string(i)).append("].descriptor rows, cols: ")
-            .append(to_string(frames[i].descriptor.rows)).append(", ").append(to_string(frames[i].descriptor.cols));
-            LOGW("##########debug genFeatures(): %s ", str1.c_str());
         }
 
         return 0;

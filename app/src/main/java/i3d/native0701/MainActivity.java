@@ -4,11 +4,14 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -16,35 +19,58 @@ public class MainActivity extends AppCompatActivity {
         System.loadLibrary("native-lib");
     }
 
+    public static int COLS;
+    public static int ROWS;
+
+    private EditText editText;
     private ImageView imageView;
     private Bitmap bitmap;
     private TextView textView;
 
-    private Button mButtonGLViewer;
+    private Button mButtonGenerate3d, mButtonGLViewer;
 
-    String javaString = "/sdcard/000i3d2";
+    String javaString = "/sdcard/000i3dc3";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        editText = findViewById(R.id.edittext_dir);
+        editText.setText(javaString);
 
-
-        textView = findViewById(R.id.text_view);
         imageView = findViewById(R.id.image_view);
-        bitmap = Bitmap.createBitmap(903, 1203, Bitmap.Config.ARGB_8888);
-        int szOfFrame = getImage(bitmap, javaString);
-        imageView.setImageBitmap(bitmap);
+        mButtonGenerate3d = findViewById(R.id.button_generate3d);
 
-        String str = ("frames.size(): ");
-        textView.setText(str + szOfFrame);
+        mButtonGenerate3d.setOnClickListener(new View.OnClickListener(){
 
-        imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                bitmap = Bitmap.createBitmap(903, 1203, Bitmap.Config.ARGB_8888);
-                getImage(bitmap, javaString);
+
+                javaString = editText.getText().toString();
+
+                int szOfFrame = processI3d(javaString);
+                ROWS = getImageH();
+                COLS = getImageW();
+                if(ROWS <= 0 || COLS <= 0)
+                {
+                    Log.e("MainActivity.OnCreate: ", "ROWS or COLS not positive...");
+                    return;
+                }
+
+                bitmap = Bitmap.createBitmap(COLS, ROWS, Bitmap.Config.ARGB_8888);
+                szOfFrame = getImage(bitmap);
                 imageView.setImageBitmap(bitmap);
+
+                imageView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        bitmap = Bitmap.createBitmap(COLS, ROWS, Bitmap.Config.ARGB_8888);
+                        getImage(bitmap);
+                        imageView.setImageBitmap(bitmap);
+                    }
+                });
+
             }
         });
 
@@ -61,5 +87,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public static native int getImage(Bitmap bitmap, String javaString);
+    public static native int processI3d(String javaString);
+
+    public static native int getImageW();
+    public static native int getImageH();
+
+    public static native int getImage(Bitmap bitmap);
 }

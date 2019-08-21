@@ -12,13 +12,14 @@
 using namespace std;
 using namespace cv;
 
-static int GenerateTwoLayerContents(i3d::Frame& pano, const int icount=30)
+static int GenerateTwoLayerContents(i3d::Frame& pano, const int icount1=30)
 {
+    const int icount = 0;
     cv::Mat pano_image_f = pano.pano_image;
     cv::Mat pano_depth_f = pano.pano_depth;
     //init
-    cv::Mat image_f(pano_image_f.size()+Size(icount*2, icount*2), CV_8UC3, Scalar(0,0,0));
-    cv::Mat image_b(pano_image_f.size()+Size(icount*2, icount*2), CV_8UC3, Scalar(0,0,0));
+    cv::Mat image_f(pano_image_f.size()+Size(icount*2, icount*2), CV_8UC3, Scalar(255,255,255));
+    cv::Mat image_b(pano_image_f.size()+Size(icount*2, icount*2), CV_8UC3, Scalar(255,255,255));
     cv::Mat depth_f(pano_depth_f.size()+Size(icount*2, icount*2), CV_32FC1, Scalar(0.0f));
     cv::Mat depth_b(pano_depth_f.size()+Size(icount*2, icount*2), CV_32FC1, Scalar(0.0f));
 
@@ -45,7 +46,11 @@ static int GenerateTwoLayerContents(i3d::Frame& pano, const int icount=30)
             //只处理有深度值的邻域，否则跳过
             d = depth_f.at<float>(h+icount, w+icount);
             if(!(d > 1e-6f))
+            {
+//                image_f.at<Vec3b>(h, w) = Vec3b(255,255,255);
                 continue;
+            }
+
             dl = depth_f.at<float>(h+icount, w-1+icount);
             dr = depth_f.at<float>(h+icount, w+1+icount);
             dt = depth_f.at<float>(h-1+icount, w+icount);
@@ -74,7 +79,7 @@ static int GenerateTwoLayerContents(i3d::Frame& pano, const int icount=30)
 
     //cout<<"begin iterate"<<endl;
     //iterate icount-1
-    for(int k = 0; k<icount-1; ++k)
+    for(int k = 0; k<icount1-1; ++k)
     {
         cv::Mat depth_b_t = depth_b.clone();
         for(int h=1; h<depth_b.rows-1; ++h)

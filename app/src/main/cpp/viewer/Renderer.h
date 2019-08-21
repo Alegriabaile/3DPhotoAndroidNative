@@ -31,8 +31,12 @@ public:
     void display();
 
 
-    void rotateCamera(GLint angle, int rotationAxis);
+    void rotateCamera(float xoffset, float yoffset);
     void translateCamera(GLint camera_Movement, float step);
+    void zoomCamera(float zoffset);
+
+    void resetR();
+    void resetT();
     void resetCamera();
 
     const std::string & getErrorInfo() const;

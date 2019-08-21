@@ -113,15 +113,11 @@ int SolvePnPProblem(std::vector<Point3f> &vPt3D, std::vector<Point2f> &vPt2D, cv
 }
 
 
-int genInitGraph(const vector<Frame>& frames, const Intrinsics& intrinsics, vector<Edge>& edges)
+int genInitialGraph(const vector<Frame>& frames, const Intrinsics& intrinsics, vector<Edge>& edges)
 {
     int fsize = frames.size();
     if(fsize<1)
-    {
-        LOGW("##########debug genInitGraph(): frames.size()<1 !!!!!!!!!!!!!!!!!   return -1!!!!!!!!!!!!!!!!!!!!!!");
         return -1;
-    }
-
 
     //尺寸与rgb图像保持一致
     Size size = frames[0].image.size();
@@ -140,13 +136,7 @@ int genInitGraph(const vector<Frame>& frames, const Intrinsics& intrinsics, vect
         {
             vector<Point2f> ppi, ppj;
             int psize = ComputeMatches(frames[i], frames[j], ppi, ppj );
-            if(psize<4)
-            {
-                string str("##########debug genInitGraph():  frames [i],[j]");
-                str.append(to_string(i)).append(",").append(to_string(j)).append( " psize < 4 !!!!!!!!!!!!!! continue");
-                LOGW("%s",str.c_str());
-                continue;
-            }
+            if(psize<4) continue;
 
             vector<Point3f> pppi;
             BackprojectTo3dPoints(ppi, frames[i], K, pppi);
@@ -158,13 +148,11 @@ int genInitGraph(const vector<Frame>& frames, const Intrinsics& intrinsics, vect
 
             double translation = fabs(min(cv::norm(rvec), 2*M_PI-cv::norm(rvec)))+ fabs(cv::norm(tvec/1000.0));//why use this????
 
-
 #ifdef GEN_INITIAL_GRAPH
-
-//            cout<<"************************************************************"<<endl;
-//            cout<<i<<","<<j<<" :   feature_points matched_points inliers translations inliers_rate : "<<endl
-//            <<"          "<< frames[i].keypoints.size()<< " "<< ppi.size()<< " "<< n_inliers<<" "<<translation
-//            << " "<<n_inliers/(double)(ppi.size())<<endl;
+            cout<<"************************************************************"<<endl;
+            cout<<i<<","<<j<<" :   feature_points matched_points inliers translations inliers_rate : "<<endl
+                <<"          "<< frames[i].keypoints.size()<< " "<< ppi.size()<< " "<< n_inliers<<" "<<translation
+                << " "<<n_inliers/(double)(ppi.size())<<endl;
             //cout<<"rx, ry, rz, tx, ty, tz: "<<rvec<<endl<<tvec<<endl;
 #endif
             const double MIN_MATCHED_FEATURE_POINTS = double(frames[i].keypoints.size())/6.0;//20
@@ -173,41 +161,11 @@ int genInitGraph(const vector<Frame>& frames, const Intrinsics& intrinsics, vect
             const double MIN_INLIER_MATCHED_RATE1 = 0.50;
             const double MIN_TRANSLATION = 0.05;
             const double MAX_TRANSLATION = 0.55;//0.5
-            if( ppi.size() <= MIN_MATCHED_FEATURE_POINTS)
-            {
-                string str("##########debug genInitGraph():  frames [i],[j]: ");
-                str.append(to_string(i)).append(",").append(to_string(j)).append(" ppi.size() <= MIN_MATCHED_FEATURE_POINTS && continue");
-                LOGW("%s",str.c_str());
-                continue;//MIN_MATCHED_FEATURE_POINTS
-            }
-            if( n_inliers <= MIN_INLIER_ROWS)
-            {
-                string str("##########debug genInitGraph():  frames [i],[j]: ");
-                str.append(to_string(i)).append(",").append(to_string(j)).append(" n_inliers <= MIN_INLIER_ROWS && continue");
-                LOGW("%s",str.c_str());
-                continue;//MIN_INLIER_ROWS..not reliable???
-            }
-            if( translation > MAX_TRANSLATION || translation < MIN_TRANSLATION)
-            {
-                string str("##########debug genInitGraph():  frames [i],[j]: ");
-                str.append(to_string(i)).append(",").append(to_string(j)).append(" translation > MAX_TRANSLATION || translation < MIN_TRANSLATION && continue");
-                LOGW("%s",str.c_str());
-                continue;
-            }
-            if( ppi.size()<MIN_MATCHED_FEATURE_POINTS*2 && n_inliers/(double)(ppi.size())<MIN_INLIER_MATCHED_RATE1)
-            {
-                string str("##########debug genInitGraph():  frames [i],[j]: ");
-                str.append(to_string(i)).append(",").append(to_string(j)).append(" MIN_INLIER_MATCHED_RATE1 && continue");
-                LOGW("%s",str.c_str());
-                continue;
-            }
-            if( ppi.size()>=MIN_MATCHED_FEATURE_POINTS*2 && n_inliers/(double)(ppi.size())<MIN_INLIER_MATCHED_RATE0)
-            {
-                string str("##########debug genInitGraph():  frames [i],[j]: ");
-                str.append(to_string(i)).append(",").append(to_string(j)).append(" MIN_INLIER_MATCHED_RATE0 && continue");
-                LOGW("%s",str.c_str());
-                continue;
-            }
+            if( ppi.size() <= MIN_MATCHED_FEATURE_POINTS)continue;//MIN_MATCHED_FEATURE_POINTS
+            if( n_inliers <= MIN_INLIER_ROWS)continue;//MIN_INLIER_ROWS..not reliable???
+            if( translation > MAX_TRANSLATION || translation < MIN_TRANSLATION)continue;
+            if( ppi.size()<MIN_MATCHED_FEATURE_POINTS*2 && n_inliers/(double)(ppi.size())<MIN_INLIER_MATCHED_RATE1) continue;
+            if( ppi.size()>=MIN_MATCHED_FEATURE_POINTS*2 && n_inliers/(double)(ppi.size())<MIN_INLIER_MATCHED_RATE0) continue;
             i3d::Edge edge;
             edge.src = i; edge.dst = j;
             edge.rx = rvec.at<double>(0); edge.ry = rvec.at<double>(1); edge.rz = rvec.at<double>(2);

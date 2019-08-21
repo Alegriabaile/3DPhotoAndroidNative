@@ -106,7 +106,7 @@ void Warper4Android::SKYBOX_GEN_VAO_TEXTURE_MVP(const i3d::Frame &frame, const s
        glGenVertexArrays(1, &skyboxVAO);
     glBindVertexArray(skyboxVAO);
     while((err = glGetError()) != GL_NO_ERROR)
-        LOGE(" Warper4Android::GenerateSkybox() : after GenVAO err == %d", err);
+        LOGE(" Warper4Android::SKYBOX_GEN_VAO_TEXTURE_MVP() : after GenVAO err == %d", err);
 
 
     if(glIsBuffer(skyboxVBO))
@@ -124,7 +124,7 @@ void Warper4Android::SKYBOX_GEN_VAO_TEXTURE_MVP(const i3d::Frame &frame, const s
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
     while((err = glGetError()) != GL_NO_ERROR)
-        LOGE(" Warper4Android::GenerateSkybox() : after GenVBO err == %d", err);
+        LOGE(" Warper4Android::SKYBOX_GEN_VAO_TEXTURE_MVP() : after GenVBO err == %d", err);
 
 
     //////////////////////////////////texture/////////////////////////////////////////////////////
@@ -140,7 +140,7 @@ void Warper4Android::SKYBOX_GEN_VAO_TEXTURE_MVP(const i3d::Frame &frame, const s
     cv::flip(depth_tex, depth_tex, 0);
 //    cv::merge(channels, depth_tex);
     minMaxLoc(depth_tex, &minV, &maxV);
-    LOGE("Warper4Android::GenerateSkybox:---depth_tex--- minV, maxV: %lf, %lf", minV, maxV);
+    LOGE("Warper4Android::SKYBOX_GEN_VAO_TEXTURE_MVP:---depth_tex--- minV, maxV: %lf, %lf", minV, maxV);
 
 
 
@@ -148,14 +148,14 @@ void Warper4Android::SKYBOX_GEN_VAO_TEXTURE_MVP(const i3d::Frame &frame, const s
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, color_tex.cols, color_tex.rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, color_tex.data);
 
     while((err = glGetError()) != GL_NO_ERROR)
-        LOGE(" Warper4Android::GenerateSkybox() : after GenColorTexture2D err == %d", err);
+        LOGE(" Warper4Android::SKYBOX_GEN_VAO_TEXTURE_MVP() : after GenColorTexture2D err == %d", err);
 
 //    glGenTextures(1, &skyboxDepthTexture);
     glBindTexture(GL_TEXTURE_2D, skyboxDepthTexture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, depth_tex.cols, depth_tex.rows, 0, GL_RED, GL_FLOAT, depth_tex.data);
 //    glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, WIDTH1, HEIGHT1, 0, GL_RED,  GL_FLOAT, NULL);
     while((err = glGetError()) != GL_NO_ERROR)
-        LOGE(" Warper4Android::GenerateSkybox() : after GenDepthTexture2D::glTexImage2D err == %d", err);
+        LOGE(" Warper4Android::SKYBOX_GEN_VAO_TEXTURE_MVP() : after GenDepthTexture2D::glTexImage2D err == %d", err);
 
 
     ////////////////////////////////////////////MVP///////////////////////////////////////////////////////////
@@ -176,11 +176,9 @@ int Warper4Android::GenerateSkybox(const i3d::Frame &frame, const std::vector<fl
 
     SKYBOX_GEN_VAO_TEXTURE_MVP(frame, vertices);
 
+    LOGE("Warper4Android::GenerateSkybox() : before draw this");
     ///////////////////////////////////draw/////////////////////////////////////////////////////////
     glEnable(GL_DEPTH_TEST);
-//    images.clear();
-//    depths.clear();
-    //glViewport(0, 0, WIDTH0, HEIGHT0);
     //////////////////////////////color//////////////////////////////
 
     while((err = glGetError()) != GL_NO_ERROR)
@@ -226,7 +224,7 @@ int Warper4Android::GenerateSkybox(const i3d::Frame &frame, const std::vector<fl
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
-
+    LOGE("Warper4Android::GenerateSkybox() : after draw this");
 
     return 0;
 }
@@ -246,6 +244,8 @@ int Warper4Android::GeneratePoints(std::vector<float> &vPoints)
 
 int Warper4Android::GeneratePanorama( i3d::Frame &frame)
 {
+    LOGE(" Warper4Android::GeneratePanorama() : before draw");
+
     const uint WIDTH2 = warperGlesInitializer.WIDTH2;
     const uint HEIGHT2 = warperGlesInitializer.HEIGHT2;
 
@@ -266,7 +266,7 @@ int Warper4Android::GeneratePanorama( i3d::Frame &frame)
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
     while((err = glGetError()) != GL_NO_ERROR)
-        LOGE(" Warper4Android::GenerateSkybox() : after GenVAO err == %d", err);
+        LOGE(" Warper4Android::GeneratePanorama() : after GenVAO err == %d", err);
 
 
     glEnable(GL_DEPTH_TEST);
@@ -317,17 +317,18 @@ int Warper4Android::GeneratePanorama( i3d::Frame &frame)
 //    LOGE("Warper4Android::GeneratePanorama:---pixel_depth--- minV, maxV: %lf, %lf", minV, maxV);
     frame.pano_depth = pixel_depth;
 
-
-
     //unbind pano framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+
+    LOGE(" Warper4Android::GeneratePanorama() : after draw");
     return 0;
 }
 
 
 int Warper4Android::GenerateAABB(i3d::Frame &frame)
 {
+    LOGE(" Warper4Android::GenerateAABB() : before");
     uint minw, minh, maxw, maxh;
     minw = minh = i3d::PANO_W;
     maxw = maxh = 0;
@@ -336,6 +337,7 @@ int Warper4Android::GenerateAABB(i3d::Frame &frame)
     int cols = frame.pano_depth.cols;
 
     Mat pano_depth = frame.pano_depth;
+    LOGE(" Warper4Android::GenerateAABB() : frame.pano_depth.rows, cols, empty?: %d, %d, %d", rows, cols, pano_depth.empty());
     for(int h=0; h<rows; ++h)
     {
         for(int w=0; w<cols; ++w)
@@ -350,7 +352,7 @@ int Warper4Android::GenerateAABB(i3d::Frame &frame)
             }
         }
     }
-
+    LOGE(" Warper4Android::GenerateAABB() : minw, minh, maxw, maxh: %d, %d, %d, %d", minw, minh, maxw, maxh);
     frame.minw = minw;
     frame.minh = minh;
     frame.maxw = maxw;
@@ -360,6 +362,8 @@ int Warper4Android::GenerateAABB(i3d::Frame &frame)
     frame.pano_image = frame.pano_image(cv::Range(minh, maxh+1), cv::Range(minw, maxw+1)).clone();
     frame.pano_depth = frame.pano_depth(cv::Range(minh, maxh+1), cv::Range(minw, maxw+1)).clone();
     frame.pano_error = pano_error(cv::Range(minh, maxh+1), cv::Range(minw, maxw+1)).clone();
+
+    LOGE(" Warper4Android::GenerateAABB() : after");
     return 0;
 }
 
@@ -382,7 +386,7 @@ int Warper4Android::WarpToPanorama(i3d::Frame &kframe, i3d::Intrinsics &intrinsi
 
 int Warper4Android::InitializeReusable()
 {
-    skyboxProjection = glm::perspective(glm::radians(90.0f), (float)WIDTH1 / (float)HEIGHT1, 0.1f, 250.0f);
+    skyboxProjection = glm::perspective(glm::radians(90.0f), (float)WIDTH1 / (float)HEIGHT1, 30.0f, 65555.0f);//0.03m-65m
     //opencv坐标至opnegl坐标的转换，front, right, back, left, top, bottom/down
     skyboxViews[0] = glm::rotate(glm::mat4(float(1.0f)), float(glm::radians(180.0f)), glm::vec3(float(1.0f), float(0.0f), float(0.0f)));
     skyboxViews[1] = glm::rotate(skyboxViews[0], glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -449,23 +453,23 @@ skyboxVAO(0), skyboxVBO(0)
 
 
     //debug................
-    for(int i=0; i<kframes.size(); ++i)
-    {
-        LOGE(" Warper4Android::Warper4Android              %d th imwrite.......", i);
-        string color_name = string("/sdcard/000i3d2/debug_panorama_outputs/color_")+to_string(i)+(".jpg");
-        string depth_name = string("/sdcard/000i3d2/debug_panorama_outputs/depth_")+to_string(i)+(".png");
-        cv::Mat depth_tmp = kframes[i].pano_depth.clone();
-        depth_tmp.convertTo(depth_tmp, CV_16U, 1000);//为了显示效果
-
-        double minV, maxV;
-        minMaxLoc(kframes[i].pano_image, &minV, &maxV);
-        LOGE("Warper4Android::Warper4Android:---kframes[%d].pano_image--- minV, maxV: %lf, %lf", i, minV, maxV);
-
-        minMaxLoc(depth_tmp, &minV, &maxV);
-        LOGE("Warper4Android::Warper4Android:---depth_tmp[%d]--- minV, maxV: %lf, %lf", i, minV, maxV);
-        imwrite(color_name, kframes[i].pano_image);
-        imwrite(depth_name, depth_tmp);
-    }
+//    for(int i=0; i<kframes.size(); ++i)
+//    {
+//        LOGE(" Warper4Android::Warper4Android              %d th imwrite.......", i);
+//        string color_name = string("/sdcard/000i3d2/debug_panorama_outputs/color_")+to_string(i)+(".jpg");
+//        string depth_name = string("/sdcard/000i3d2/debug_panorama_outputs/depth_")+to_string(i)+(".png");
+//        cv::Mat depth_tmp = kframes[i].pano_depth.clone();
+//        depth_tmp.convertTo(depth_tmp, CV_16U, 1000);//为了显示效果
+//
+//        double minV, maxV;
+//        minMaxLoc(kframes[i].pano_image, &minV, &maxV);
+//        LOGE("Warper4Android::Warper4Android:---kframes[%d].pano_image--- minV, maxV: %lf, %lf", i, minV, maxV);
+//
+//        minMaxLoc(depth_tmp, &minV, &maxV);
+//        LOGE("Warper4Android::Warper4Android:---depth_tmp[%d]--- minV, maxV: %lf, %lf", i, minV, maxV);
+//        imwrite(color_name, kframes[i].pano_image);
+//        imwrite(depth_name, depth_tmp);
+//    }
 }
 
 Warper4Android::~Warper4Android() {}

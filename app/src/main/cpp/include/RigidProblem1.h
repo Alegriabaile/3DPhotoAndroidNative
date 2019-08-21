@@ -59,8 +59,6 @@ private:
 
         camera_i_[k] = i;
         camera_j_[k] = j;
-
-        return 0;
     }
     bool operator()(int num_matches_, int num_cameras_, i3d::Intrinsics intrinsics1)
     {
@@ -150,14 +148,7 @@ int RigidProblem::initParameters(
     }
 
     //cout<<"naiveRtProblem 调用重载运算符"<<endl;
-    i3d::Intrinsics  _intrinsics;
-    _intrinsics.cx = kframes[0].image.cols/2;
-    _intrinsics.cy = kframes[0].image.rows/2;
-    _intrinsics.f = intrinsics.f*_intrinsics.cx/intrinsics.cx;
-    _intrinsics.colorw = intrinsics.colorw;
-    _intrinsics.colorh = intrinsics.colorh;
-    _intrinsics.depthw = intrinsics.depthw;
-    _intrinsics.depthh = intrinsics.depthh;
+    i3d::Intrinsics  _intrinsics = intrinsics;
 
     this->operator()(matches.size(), kframes.size(), _intrinsics);
     for(int k = 0; k<matches.size(); ++k)
@@ -288,7 +279,7 @@ public:
             i3d::Intrinsics intrinsics)
             : a_x(a_x), a_y(a_y), a_d(a_d)
             , b_x(b_x), b_y(b_y), b_d(b_d)
-            , f(intrinsics.f*intrinsics.colorw/intrinsics.cx/2), cx(intrinsics.colorw/2), cy(intrinsics.colorh/2) {}
+            , f(intrinsics.f), cx(intrinsics.cx), cy(intrinsics.cy) {}
     //, f(intrinsics.f*intrinsics.colorw/intrinsics.cx/2), cx(intrinsics.colorw/2), cy(intrinsics.colorh/2) {}
 
     // camera[0,1,2] are the angle-axis rotation.
@@ -380,18 +371,16 @@ int RigidProblem::solveProblem()
     // for standard bundle adjustment problems.
     ceres::Solver::Options options;
     options.trust_region_strategy_type = ceres::LEVENBERG_MARQUARDT;
-    options.linear_solver_type = ceres::DENSE_SCHUR;//ceres::DENSE_SCHUR; //ceres::LEVENBERG_MARQUARDT;
+    options.linear_solver_type = ceres::DENSE_QR;//ceres::DENSE_SCHUR; //ceres::LEVENBERG_MARQUARDT;
 
-//    options.minimizer_progress_to_stdout = true;
+    options.minimizer_progress_to_stdout = true;
     options.max_num_iterations = 50;//100;
-//    options.num_threads = 4;
-//    options.num_linear_solver_threads = 4;
+    options.num_threads = 4;
+    options.num_linear_solver_threads = 4;
 
     ceres::Solver::Summary summary;
     ceres::Solve(options, &problem, &summary);
-//    std::cout << summary.FullReport() << "\n";
+    std::cout << summary.FullReport() << "\n";
     return 0;
 }
-
-
 #endif //I3D_RIGIDPROBLEM_H

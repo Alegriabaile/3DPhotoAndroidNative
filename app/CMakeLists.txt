@@ -38,7 +38,7 @@ file(GLOB I3D_SRCS
         src/main/cpp/src/genInitialGraph.cpp
         src/main/cpp/src/genGlobalByMst.cpp
 
-        src/main/cpp/src/DProblem1.cpp
+#        src/main/cpp/src/DProblem1.cpp
 
         src/main/cpp/src/WarperEglManager.cpp
         src/main/cpp/src/WarperGlesInitializer.cpp

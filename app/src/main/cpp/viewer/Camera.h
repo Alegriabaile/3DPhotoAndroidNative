@@ -24,7 +24,7 @@ const float YAW         =  90.0f;//-90.0f;
 const float PITCH       =  0.0f;
 const float SPEED       =  0.01f;
 const float SENSITIVITY =  0.01f;
-const float ZOOM        =  45.0f;
+const float ZOOM        =  30.0f;
 
 
 // An abstract camera class that processes input and calculates the corresponding Euler Angles, Vectors and Matrices for use in OpenGL
@@ -91,6 +91,18 @@ public:
             Position += Right * velocity;
     }
 
+    void ResetR()
+    {
+        WorldUp = glm::vec3(0.0f, -1.0f, 0.0f);
+        Yaw = YAW;
+        Pitch = PITCH;
+        updateCameraVectors();
+    }
+    void ResetT()
+    {
+        Position = glm::vec3(0.0f, 0.0f, 0.0f);
+        updateCameraVectors();
+    }
     void Reset()
     {
         Position = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -125,16 +137,16 @@ public:
     }
 
     // Processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
-    void ProcessMouseScroll(float yoffset)
+    void ProcessMouseScroll(float zoffset)
     {
-        /*
-        if (Zoom >= 1.0f && Zoom <= 45.0f)
-            Zoom -= yoffset;
+
+        if (Zoom >= 1.0f && Zoom <= ZOOM)
+            Zoom -= zoffset;
         if (Zoom <= 1.0f)
             Zoom = 1.0f;
-        if (Zoom >= 45.0f)
-            Zoom = 45.0f;*/
-        Position += MovementSpeed * Front * yoffset;
+        if (Zoom >= ZOOM)
+            Zoom = ZOOM;
+//        Position += MovementSpeed * Front * zoffset;
     }
 
 private:

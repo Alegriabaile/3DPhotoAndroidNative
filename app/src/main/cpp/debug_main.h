@@ -6,19 +6,18 @@
 #define NATIVE0701_DEBUG_INITINPUTDATA_H
 #include <iostream>
 #include <string>
-#include <include/Warper4Android.h>
 
 #include "Frame.h"
 #include "i3d.h"
+
 #include "initInputData.h"
 #include "genFeatures.h"
-//#include "genRelativePoses.h"
 #include "genInitialGraph.h"
 #include "genKeyFrames.h"
 #include "genGlobalByMst.h"
+#include "DeformableProblem.h"
 
-#include "DProblem1.h"
-//#include "Pers2PanoWarper.h"
+#include <Warper4Android.h>
 #include "stitchAllPanos.h"
 #include "genCompactTri.h"
 
@@ -58,7 +57,7 @@ int debug_estimatePoses(std::vector<i3d::Frame> &frames, i3d::Intrinsics& intrin
     //*********determine match pairs*************************************//
     LOGW("start genInitGraph...");
     vector<Edge> edges;
-    genInitGraph(frames, intrinsics, edges);//有并发提升空间
+    genInitialGraph(frames, intrinsics, edges);//有并发提升空间
 //    genRelativePoses(frames, intrinsics, edges);//有并发提升空间
     LOGW("finish genInitGraph");
 
@@ -94,7 +93,7 @@ int debug_estimatePoses(std::vector<i3d::Frame> &frames, i3d::Intrinsics& intrin
     string str("kframes.size(): ");
     str.append(to_string(kframes.size()));
     LOGW("         %s    ", str.c_str());
-    DProblem1 rigidProblem(kframes, kedges, intrinsics, 2, 2, 10);
+    DeformableProblem<2,2> deformableProblemWxh(kframes, kedges, intrinsics);
     LOGW("finish solveProblem...");
 
     frames = kframes;
@@ -156,6 +155,7 @@ int debug_main(std::string root_dir, std::vector<i3d::Frame> &kframes, std::vect
     Frame pano;
     debug_stitchAllPanos(kframes, pano);
 
+    LOGE("debug_main(): save pano result.");
     string res_pano_color = root_dir + string("/debug_res_pano/pano_color.jpg");
     imwrite(res_pano_color, pano.pano_image);
 
@@ -164,7 +164,10 @@ int debug_main(std::string root_dir, std::vector<i3d::Frame> &kframes, std::vect
 
 //    Mat finalTexture;
 //    vector<float> finalArray;
+    LOGE("debug_main(): save texture result.");
     genCompactTri(pano, texture, vertices);
+    string texture_name = root_dir + string("/debug_compact_tri/texture.jpg");
+    imwrite(texture_name, texture);
 
     return 0;
 }

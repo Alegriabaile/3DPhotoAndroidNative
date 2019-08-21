@@ -17,4 +17,7 @@ std::vector<float> vertices;
 //color texture;
 cv::Mat texture;
 
+//input frames and intermediate results.
+std::vector<i3d::Frame> frames;
+
 #endif //NATIVE0701_3D_RESULTS_H

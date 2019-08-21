@@ -3,21 +3,25 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#000"
     android:orientation="vertical">
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"/>
+
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="4"
-        android:gravity="center">
+        android:layout_weight="2"
 
-        <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-            android:layout_width="800px"
-            android:layout_height="800px"
+        android:gravity="center"
+        android:layout_marginHorizontal="40dp"
+        android:layout_marginVertical="60dp"
+
+        android:background="#888">
+
+        <FrameLayout
+            android:id="@+id/frame_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             >
 
             <i3d.native0701.MyGLViewer
@@ -32,74 +36,45 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="2">
+        android:layout_weight="2"
+        android:orientation="horizontal"
+        >
 
-        <TableLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dip"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentLeft="true">
+        <LinearLayout
+            android:id="@+id/translate_camera"
+            android:layout_width="0dp"
+            android:layout_weight="3"
+            android:layout_height="match_parent"
 
-            <TableRow>
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="5dip"
-                    android:src="@drawable/center"/>
-                <ImageView
-                    android:id="@+id/up"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="5dip"
-                    android:src="@drawable/up"/>
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="5dip"
-                    android:src="@drawable/center"/>
-            </TableRow>
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="#099">
 
-            <TableRow>
-                <ImageView
-                    android:id="@+id/left"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="5dip"
-                    android:src="@drawable/left"/>
-                <ImageView
-                    android:id="@+id/reset"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="5dip"
-                    android:src="@drawable/reset"/>
-                <ImageView
-                    android:id="@+id/right"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="5dip"
-                    android:src="@drawable/right"/>
-            </TableRow>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="30dp"
+                android:text="transform"/>
 
-            <TableRow>
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="5dip"
-                    android:src="@drawable/center"/>
-                <ImageView
-                    android:id="@+id/down"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="5dip"
-                    android:src="@drawable/down"/>
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="5dip"
-                    android:src="@drawable/center"/>
-            </TableRow>
-        </TableLayout>
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:id="@+id/linearlayout_reset"
+            android:layout_width="0dp"
+            android:layout_weight="2"
+            android:layout_height="match_parent"
+            android:background="#990"
+            android:gravity="center">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="30dp"
+                android:text="reset"/>
+
+        </LinearLayout>
+
 
     </LinearLayout>
 

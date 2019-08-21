@@ -15,6 +15,11 @@ namespace i3d
         double f;
         double cx;
         double cy;
+
+        double colorw, colorh;
+        double depthw, depthh;
+        double fx, fy;
+        double l1, l2;
     };
 
     class Edge

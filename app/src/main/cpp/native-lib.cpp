@@ -18,16 +18,15 @@ extern "C"
 #endif
 
 JNIEXPORT jint JNICALL
-Java_i3d_native0701_MainActivity_getImage(JNIEnv *env, jclass, jobject bitmap, jstring javaString) {
+Java_i3d_native0701_MainActivity_processI3d(JNIEnv *env, jclass clazz, jstring javaString) {
 
     //cv::Mat image = cv::imread("/storage/emulated/0/DCIM/Camera/test.png", cv::IMREAD_UNCHANGED);
     using namespace cv;
     using namespace std;
     using namespace i3d;
 
-    static int index = 0;
+
     static string root_dir;
-    static vector<Frame> frames;
 
     jboolean isCopy;
     const char* str;
@@ -38,6 +37,7 @@ Java_i3d_native0701_MainActivity_getImage(JNIEnv *env, jclass, jobject bitmap, j
     bool debug_glsurfaceview = true;
     if(!debug_glsurfaceview)
     {
+        /*
         vertices = {
                 //front face
                 -1, 1, 1, 0.25, 0.33,
@@ -90,7 +90,7 @@ Java_i3d_native0701_MainActivity_getImage(JNIEnv *env, jclass, jobject bitmap, j
             frame.image = texture.clone();
             frames.push_back(frame);
         }
-
+         */
     }
     else
     if(root_dir.empty() || root_dir.compare(root_dir_))
@@ -101,18 +101,81 @@ Java_i3d_native0701_MainActivity_getImage(JNIEnv *env, jclass, jobject bitmap, j
         LOGW("debug_initInputData finished.............");
     }
 
+    if(frames.empty())
+        return 0;
+
+    //h,w,type
+
+//
+//
+//    LOGE("JNI getImgSize():: start GetFieldID()");
+//    jfieldID  nameFieldId_cols, nameFieldId_rows ;
+////    jclass cls = env->GetObjectClass(obj);  //获得Java层该对象实例的类引用，即HelloJNI类引用
+//    nameFieldId_cols = (*env).GetFieldID(clazz , "COLS" , "I"); //获得属性句柄
+//    nameFieldId_rows = (*env).GetFieldID(clazz , "ROWS" , "I"); //获得属性句柄
+//    LOGE("JNI getImgSize():: finish GetFieldID()");
+//
+//    if(nameFieldId_cols == NULL || nameFieldId_rows == NULL)
+//    {
+//        LOGE("JNI can't GetFieldID COLS and ROWS");
+//        return frames.size();
+//    }
+//
+//    LOGE("JNI getImgSize():: start GetFieldID()");
+//    (*env).SetStaticIntField(clazz, nameFieldId_cols, image.cols);
+//    (*env).SetStaticIntField(clazz, nameFieldId_rows, image.rows);
+
+
+    return frames.size();
+}
+
+
+
+JNIEXPORT jint JNICALL
+Java_i3d_native0701_MainActivity_getImageW(JNIEnv *env, jclass clazz) {
+
+    if(frames.empty())
+        return 0;
+
+    cv::Mat image = frames[0].image;
+    return image.cols;
+}
+
+JNIEXPORT jint JNICALL
+Java_i3d_native0701_MainActivity_getImageH(JNIEnv *env, jclass clazz) {
+
+    if(frames.empty())
+        return 0;
+    cv::Mat image = frames[0].image;
+    return image.rows;
+}
+
+JNIEXPORT jint JNICALL
+Java_i3d_native0701_MainActivity_getImage(JNIEnv *env, jclass clazz, jobject bitmap) {
+
+    //cv::Mat image = cv::imread("/storage/emulated/0/DCIM/Camera/test.png", cv::IMREAD_UNCHANGED);
+    using namespace cv;
+    using namespace std;
+    using namespace i3d;
+
+    static int index = -1;
+
+    if(frames.empty())
+        return 0;
+
     index = (index+1)%frames.size();
     Mat image = frames[index].image;
 
     image.convertTo(image, CV_8UC4);
     cv::cvtColor(image, image, cv::COLOR_BGRA2RGBA);
     //h,w,type
-    cv::Mat bmp(image.rows, image.cols, CV_8UC4);
+    cv::Mat img_show = image;
+//    resize(image, img_show, Size(640, 480));
+
+    cv::Mat bmp(img_show.rows, img_show.cols, CV_8UC4);
     AndroidBitmap_lockPixels(env, bitmap, (void **)&bmp.data);
-    image.copyTo(bmp);
+    img_show.copyTo(bmp);
     AndroidBitmap_unlockPixels(env, bitmap);
-
-
 
     return frames.size();
 }
@@ -161,12 +224,28 @@ Java_i3d_native0701_GLUtils_rotateCamera(JNIEnv *env, jclass, jfloat xoffset, jf
 }
 
 JNIEXPORT void JNICALL
+Java_i3d_native0701_GLUtils_zoomCamera(JNIEnv *env, jclass, jfloat zoffset)
+{
+    renderer.zoomCamera(zoffset);
+}
+
+JNIEXPORT void JNICALL
 Java_i3d_native0701_GLUtils_resetPose(JNIEnv *env, jclass)
 {
     renderer.resetCamera();
 }
 
+JNIEXPORT void JNICALL
+Java_i3d_native0701_GLUtils_resetR(JNIEnv *env, jclass)
+{
+    renderer.resetR();
+}
 
+JNIEXPORT void JNICALL
+Java_i3d_native0701_GLUtils_resetT(JNIEnv *env, jclass)
+{
+    renderer.resetT();
+}
 
 
 

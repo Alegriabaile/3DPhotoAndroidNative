@@ -15,7 +15,10 @@ public class GLUtils {
 
     public static native void translateCamera(int camera_Movement, float step);
     public static native void rotateCamera(float xoffset, float yoffset);
+    public static native void zoomCamera(float zoffset);
 
+    public static native void resetR();
+    public static native void resetT();
     public static native void resetPose();
 
 }
