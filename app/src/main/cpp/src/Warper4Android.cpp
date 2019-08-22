@@ -12,7 +12,7 @@ using namespace cv;
 //可以将此步骤改写至shader中，比如使用instanced rendering，在geometry shader中生成三角网格、uv坐标
 int Warper4Android::GenerateTriangles(const cv::Mat &depth,
                                                const i3d::Intrinsics &intrinsics,
-                                               std::vector<float> &vertices)
+                                               std::vector<float> &vertices, cv::Mat& radius)
 {
     const float MAX_DIFF = 0.05;//相邻像素深度值可相差的最大比率
 
@@ -20,9 +20,11 @@ int Warper4Android::GenerateTriangles(const cv::Mat &depth,
     const float cols = depth.cols;
 
     float cx, cy, f;
-//    cx = cols/2; cy = rows/2;
-//    f = intrinsics.f*rows/2/intrinsics.cy;
-    cx = intrinsics.cx; cy = intrinsics.cy; f = intrinsics.f;
+    cx = cols/2; cy = rows/2;
+    f = intrinsics.f*rows/2/intrinsics.cy;
+//    cx = intrinsics.cx; cy = intrinsics.cy; f = intrinsics.f;
+
+
 
     vertices.clear();
     vertices.reserve((rows-1)*(cols-1)*6*5);
@@ -371,7 +373,8 @@ int Warper4Android::WarpToPanorama(i3d::Frame &kframe, i3d::Intrinsics &intrinsi
 {
 
     vector<float> vertices;
-    GenerateTriangles(kframe.depth, intrinsics, vertices);
+    cv::Mat radius;
+    GenerateTriangles(kframe.depth, intrinsics, vertices, radius);
 
     vector<Mat> images, depths;
     GenerateSkybox(kframe, vertices);

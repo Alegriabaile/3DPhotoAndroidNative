@@ -20,7 +20,8 @@ private:
     //从RGBD图片生成致密网格,且相邻像素值在相邻时过大时不生成三角形。未来可将此步骤放入shader中进行优化。
     int GenerateTriangles( const cv::Mat &depth,
                            const i3d::Intrinsics &intrinsics,
-                           std::vector<float> &vertices);
+                           std::vector<float> &vertices,
+                           cv::Mat &radius);
 
     int GenerateSkybox( const i3d::Frame &frame,
                         const std::vector<float> &vertices);
