@@ -35,6 +35,14 @@ int debug_initInputData(std::string root_dir, std::vector<i3d::Frame> &kframes, 
 //    Intrinsics intrinsics;
     initFrames(root_dir, kframes, intrinsics);
     LOGW("finish initFrames");
+
+
+    LOGW("[                                     ]");
+    LOGW("[                                     ]");
+    //*********compute feature points(corners and descriptors)***************//
+    LOGW("start computeFeatures...");
+    computeFeatures(kframes);//opencv内部利用了多线程
+    LOGW("finish computeFeatures");
     return 0;
 }
 
@@ -44,13 +52,6 @@ int debug_estimatePoses(std::vector<i3d::Frame> &frames, i3d::Intrinsics& intrin
     using namespace std;
     using namespace cv;
     using namespace i3d;
-
-    LOGW("[                                     ]");
-    LOGW("[                                     ]");
-    //*********compute feature points(corners and descriptors)***************//
-    LOGW("start computeFeatures...");
-    computeFeatures(frames);//opencv内部利用了多线程
-    LOGW("finish computeFeatures");
 
     LOGW("[                                     ]");
     LOGW("[                                     ]");
@@ -123,13 +124,6 @@ int debug_stitchAllPanos(std::vector<i3d::Frame> &kframes, i3d::Frame& pano)
     LOGW("start stitchAllPanos...");
     stitchAllPanos(kframes, pano);
     LOGW("finish stitchAllPanos...");
-
-    return 0;
-}
-
-
-int debug_genCompactTri()
-{
 
     return 0;
 }

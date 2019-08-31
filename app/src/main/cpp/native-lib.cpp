@@ -18,7 +18,7 @@ extern "C"
 #endif
 
 JNIEXPORT jint JNICALL
-Java_i3d_native0701_MainActivity_processI3d(JNIEnv *env, jclass clazz, jstring javaString) {
+Java_i3d_native0701_ProcessTask_processI3d(JNIEnv *env, jobject obj, jstring javaString) {
 
     //cv::Mat image = cv::imread("/storage/emulated/0/DCIM/Camera/test.png", cv::IMREAD_UNCHANGED);
     using namespace cv;
@@ -34,101 +34,38 @@ Java_i3d_native0701_MainActivity_processI3d(JNIEnv *env, jclass clazz, jstring j
     string root_dir_(str);
     delete[] str;
 
-    bool debug_glsurfaceview = true;
-    if(!debug_glsurfaceview)
-    {
-        /*
-        vertices = {
-                //front face
-                -1, 1, 1, 0.25, 0.33,
-                1, 1, 1, 0.5,  0.33,
-                1, -1, 1, 0.5, 0.66,
-//                1, -1, 1, 0.5, 0.66,
-//                -1, -1, 1, 0.25, 0.66,
-//                -1, 1, 1, 0.25, 0.33,
-//                //right face
-//                1, 1, 1, 0.5, 0.33,
-//                1, 1, -1, 0.75, 0.33,
-//                1, -1, -1, 0.75, 0.66,
-//                1, -1, -1, 0.75, 0.66,
-//                1, -1, 1, 0.5, 0.66,
-//                1, 1, 1, 0.5, 0.33,
-//                //back face
-//                1, 1, -1, 0.75, 0.33,
-//                -1, 1, -1, 1.0, 0.33,
-//                -1, -1, -1, 1.0, 0.66,
-//                -1, -1, -1, 1.0, 0.66,
-//                1, -1, -1, 0.75, 0.66,
-//                1, 1, -1, 0.75, 0.33,
-//                //left face
-//                -1, 1, -1, 0.0, 0.33,
-//                -1, 1, 1, 0.25, 0.33,
-//                -1, -1, 1, 0.25, 0.66,
-//                -1, -1, 1, 0.25, 0.66,
-//                -1, -1, -1, 0.0, 0.66,
-//                -1, 1, -1, 0.0, 0.33,
-//                //top face
-//                -1, -1, 1, 0.25, 0.66,
-//                1, -1, 1, 0.5, 0.66,
-//                1, -1, -1, 0.5, 1.0,
-//                1, -1, -1, 0.5, 1.0,
-//                -1, -1, -1, 0.25, 1.0,
-//                -1, -1, 1, 0.25, 0.66,
-//                //bottom face
-//                -1, 1, -1, 0.25, 0.0,
-//                1, 1, -1, 0.5, 0.0,
-//                1, 1, 1, 0.5, 0.33,
-//                1, 1, 1, 0.5, 0.33,
-//                -1, 1, 1, 0.25, 0.33,
-//                -1, 1, -1, 0.25, 0.0,
-        };
-
-        texture = cv::Mat(800, 800, CV_8UC3, Scalar(0, 0, 255, 0));
-        if(frames.empty())
-        {
-            Frame frame;
-            frame.image = texture.clone();
-            frames.push_back(frame);
-        }
-         */
-    }
-    else
     if(root_dir.empty() || root_dir.compare(root_dir_))
     {
         root_dir.assign(root_dir_.begin(), root_dir_.end());
-        LOGW("debug_initInputData start.........");
-        debug_main(root_dir, frames, vertices, texture);
-        LOGW("debug_initInputData finished.............");
+//        LOGW("debug_initInputData start.........");
+//        debug_main(root_dir, frames, vertices, texture);
+//        LOGW("debug_initInputData finished.............");
+
+
+        jclass claz = env->GetObjectClass(obj);
+        jmethodID jmethodID1=env->GetMethodID(claz,"notifyMainActivity","()I");
+
+        Intrinsics intrinsics;
+        debug_initInputData(root_dir, frames, intrinsics);
+        env->CallIntMethod(obj, jmethodID1);
+
+        debug_estimatePoses(frames, intrinsics);
+        env->CallIntMethod(obj, jmethodID1);
+
+        debug_warpToPanoramas(frames, intrinsics);
+        env->CallIntMethod(obj, jmethodID1);
+
+
+        Frame pano;
+        debug_stitchAllPanos(frames, pano);
+        env->CallIntMethod(obj, jmethodID1);
+
+        genCompactTri(pano, texture, vertices);
+        env->CallIntMethod(obj, jmethodID1);
     }
-
-    if(frames.empty())
-        return 0;
-
-    //h,w,type
-
-//
-//
-//    LOGE("JNI getImgSize():: start GetFieldID()");
-//    jfieldID  nameFieldId_cols, nameFieldId_rows ;
-////    jclass cls = env->GetObjectClass(obj);  //获得Java层该对象实例的类引用，即HelloJNI类引用
-//    nameFieldId_cols = (*env).GetFieldID(clazz , "COLS" , "I"); //获得属性句柄
-//    nameFieldId_rows = (*env).GetFieldID(clazz , "ROWS" , "I"); //获得属性句柄
-//    LOGE("JNI getImgSize():: finish GetFieldID()");
-//
-//    if(nameFieldId_cols == NULL || nameFieldId_rows == NULL)
-//    {
-//        LOGE("JNI can't GetFieldID COLS and ROWS");
-//        return frames.size();
-//    }
-//
-//    LOGE("JNI getImgSize():: start GetFieldID()");
-//    (*env).SetStaticIntField(clazz, nameFieldId_cols, image.cols);
-//    (*env).SetStaticIntField(clazz, nameFieldId_rows, image.rows);
-
 
     return frames.size();
 }
-
 
 
 JNIEXPORT jint JNICALL

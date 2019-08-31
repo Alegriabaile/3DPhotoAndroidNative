@@ -9,6 +9,7 @@ namespace i3d
 
     int initFrames(const std::string & mainDir, std::vector<Frame>& frames, i3d::Intrinsics& intrinsic)
     {
+        frames.clear();
         //using namespace cv;
         std::vector<cv::Mat> images, depths;
         readRGBD(mainDir, images, depths);
