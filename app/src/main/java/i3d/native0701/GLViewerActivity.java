@@ -36,7 +36,7 @@ public class GLViewerActivity extends AppCompatActivity  implements View.OnTouch
         setContentView(R.layout.activity_glviewer);
 
         FrameLayout frameLayout = findViewById(R.id.frame_layout);
-        frameLayout.getLayoutParams().height = frameLayout.getLayoutParams().width;
+        frameLayout.getLayoutParams().height = frameLayout.getLayoutParams().width*4/3;
 
 
         myGLViewer = findViewById(R.id.gl_viewer);
@@ -91,8 +91,8 @@ public class GLViewerActivity extends AppCompatActivity  implements View.OnTouch
         } else if(MotionEvent.ACTION_MOVE == action) {
             float dx = event.getX() - oldX, dy = event.getY() - oldY;
             double moveDistance = Math.sqrt(dx*dx + dy*dy);
-                GLUtils.translateCamera(GLUtils.UP, dy*50.0f);
-                GLUtils.translateCamera(GLUtils.LEFT, dx*50.0f);
+                GLUtils.translateCamera(GLUtils.UP, dy*30.0f);
+                GLUtils.translateCamera(GLUtils.LEFT, dx*30.0f);
                 myGLViewer.requestRender();
                 oldX += dx;
                 oldY += dy;
