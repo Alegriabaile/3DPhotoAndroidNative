@@ -36,8 +36,9 @@ public class MainActivity extends AppCompatActivity {
     private Button mButtonGenerate3d, mButtonGLViewer;
 
     private String javaString = "/sdcard/000i3dc3";
-    private Handler handler;
-    private ProcessTask processTask;
+
+    static private Handler handler;
+    static private ProcessTask processTask;//防止MainActivity无法回收导致的资源泄露
 
     private Timer timer = new Timer();
     private int otime, lasttime, curtime, cnt;
@@ -77,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
 
                 processTask.execute();
                 mButtonGenerate3d.setEnabled(false);
+                mButtonGLViewer.setEnabled(false);
 //                mButtonGenerate3d.setVisibility(View.GONE);
 
                 TimerTask timerTask = new TimerTask() {
@@ -153,6 +155,7 @@ public class MainActivity extends AppCompatActivity {
                 });
                 stateTextView.setText("finished process...");
                 mButtonGenerate3d.setEnabled(true);
+                mButtonGLViewer.setEnabled(true);
                 timer.cancel();
                 timer = null;
                 break;
@@ -160,6 +163,7 @@ public class MainActivity extends AppCompatActivity {
             default:
                 stateTextView.setText("error with code "+Integer.toString(state)+" ...");
                 mButtonGenerate3d.setEnabled(true);
+                mButtonGLViewer.setEnabled(true);
                 timer.cancel();
                 timer = null;
                 break;
