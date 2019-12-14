@@ -22,7 +22,7 @@ private:
                            const i3d::Intrinsics &intrinsics,
                            std::vector<float> &vertices,
                            cv::Mat &radius);
-
+    void transformMatrixFromExtrinsics(const double * const extrinsics, glm::mat4 & transformMat);
     int GenerateSkybox( const i3d::Frame &frame,
                         const std::vector<float> &vertices);
 

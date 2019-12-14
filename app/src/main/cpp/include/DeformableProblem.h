@@ -362,55 +362,55 @@ int DeformableProblem<gridw, gridh>::updateParameters(std::vector<i3d::Frame> & 
     // = |n X vector(center - camera_original)|/(|n|*|vector(center - camera_original)|)
     //最小，为使计算简单，去掉|n|*|vector(center - camera_original)|项，即只要优化
     //|n X vector(center - camera_original)|使其最小即可。
-    uint ksize = kframes.size();
-    std::vector<cv::Mat> N(ksize);
-    std::vector<cv::Mat> NNT(ksize);
-    std::vector<cv::Mat> NNTo(ksize);
-    cv::Mat A = cv::Mat::zeros(3,3,CV_32FC1);
-    cv::Mat b = cv::Mat(3,1,CV_32FC1, cv::Scalar(0));
-    for(int i=0; i<kframes.size(); ++i)
-    {
-        cv::Vec3f point0(0,0,100);
-        cv::Vec3f orig0(0,0,0);
-        cv::Vec3f point1, orig1;
-        cv::Vec3f rvec, tvec;
-
-        rvec[0] = parameters[i*6]; rvec[1] = parameters[i*6+1]; rvec[2] = parameters[i*6+2];
-        tvec[0] = parameters[i*6+3]; tvec[1] = parameters[i*6+4]; tvec[2] = parameters[i*6+5];
-
-        point_transfer(point0, rvec, tvec, point1);
-        point_transfer(orig0, rvec, tvec, orig1);
-
-        cv::Vec3f n(normalize(point1-orig1));
-        N[i] = (cv::Mat_<float>(3,3) <<
-                                 0, -n[2], n[1], n[2], 0, -n[0], -n[1], n[0], 0 );
-        cv::Mat o = (cv::Mat_<float>(3,1) <<  orig1[0], orig1[1], orig1[2]);
-        NNT[i] = N[i]*(-N[i]); NNTo[i] = NNT[i]*o;
-
-        A += NNT[i]; b += NNTo[i];
-        //cout<<orig1<<", "<<point1<<", "<<n<<";"<<endl;
-    }
-
-    cv::Mat A_inverse;
-    invert(A, A_inverse);
-    cv::Mat center = A_inverse*b;
-    //cout<<A<<endl;
-    //cout<<center<<endl;
-
-    double rx, ry, rz, tx, ty, tz;
-    rx = ry = rz = 0;
-    tx = center.at<float>(0); ty = center.at<float>(1); tz = center.at<float>(2);
-    for(int i=0; i<kframes.size(); ++i)
-    {
-        rx += kframes[i].rx; ry += kframes[i].ry; rz += kframes[i].rz;
-    }
-    for(int i=0; i<kframes.size(); ++i)
-    {
-        kframes[i].rx -= rx/kframes.size();
-        kframes[i].ry -= ry/kframes.size();
-        kframes[i].rz -= rz/kframes.size();
-        kframes[i].tx -= tx; kframes[i].ty -= ty; kframes[i].tz -= tz;
-    }
+//    uint ksize = kframes.size();
+//    std::vector<cv::Mat> N(ksize);
+//    std::vector<cv::Mat> NNT(ksize);
+//    std::vector<cv::Mat> NNTo(ksize);
+//    cv::Mat A = cv::Mat::zeros(3,3,CV_32FC1);
+//    cv::Mat b = cv::Mat(3,1,CV_32FC1, cv::Scalar(0));
+//    for(int i=0; i<kframes.size(); ++i)
+//    {
+//        cv::Vec3f point0(0,0,100);
+//        cv::Vec3f orig0(0,0,0);
+//        cv::Vec3f point1, orig1;
+//        cv::Vec3f rvec, tvec;
+//
+//        rvec[0] = parameters[i*6]; rvec[1] = parameters[i*6+1]; rvec[2] = parameters[i*6+2];
+//        tvec[0] = parameters[i*6+3]; tvec[1] = parameters[i*6+4]; tvec[2] = parameters[i*6+5];
+//
+//        point_transfer(point0, rvec, tvec, point1);
+//        point_transfer(orig0, rvec, tvec, orig1);
+//
+//        cv::Vec3f n(normalize(point1-orig1));
+//        N[i] = (cv::Mat_<float>(3,3) <<
+//                                 0, -n[2], n[1], n[2], 0, -n[0], -n[1], n[0], 0 );
+//        cv::Mat o = (cv::Mat_<float>(3,1) <<  orig1[0], orig1[1], orig1[2]);
+//        NNT[i] = N[i]*(-N[i]); NNTo[i] = NNT[i]*o;
+//
+//        A += NNT[i]; b += NNTo[i];
+//        //cout<<orig1<<", "<<point1<<", "<<n<<";"<<endl;
+//    }
+//
+//    cv::Mat A_inverse;
+//    invert(A, A_inverse);
+//    cv::Mat center = A_inverse*b;
+//    //cout<<A<<endl;
+//    //cout<<center<<endl;
+//
+//    double rx, ry, rz, tx, ty, tz;
+//    rx = ry = rz = 0;
+//    tx = center.at<float>(0); ty = center.at<float>(1); tz = center.at<float>(2);
+//    for(int i=0; i<kframes.size(); ++i)
+//    {
+//        rx += kframes[i].rx; ry += kframes[i].ry; rz += kframes[i].rz;
+//    }
+//    for(int i=0; i<kframes.size(); ++i)
+//    {
+//        kframes[i].rx -= rx/kframes.size();
+//        kframes[i].ry -= ry/kframes.size();
+//        kframes[i].rz -= rz/kframes.size();
+//        kframes[i].tx -= tx; kframes[i].ty -= ty; kframes[i].tz -= tz;
+//    }
 
     for(int i=0; i<kframes.size(); ++i)
     {

@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
 
     private Button mButtonGenerate3d, mButtonGLViewer;
 
-    private String javaString = "/sdcard/000i3dc3";
+    private String javaString = "/sdcard/Native0701/000i3dc3";
 
     static private Handler handler;
     static private ProcessTask processTask;//防止MainActivity无法回收导致的资源泄露

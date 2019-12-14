@@ -96,6 +96,25 @@ int Warper4Android::GenerateTriangles(const cv::Mat &depth,
     return vertices.size()/(5*3);
 }
 
+void Warper4Android::transformMatrixFromExtrinsics(
+        const double *const extrinsics,
+        glm::mat4 &transformMat)
+{
+    transformMat = glm::mat4(1.0f);
+    //relative R, t.
+    cv::Mat rVec = (cv::Mat_<double>(3, 1) << extrinsics[0], extrinsics[1], extrinsics[2]);
+    cv::Mat R = cv::Mat(3,3,CV_64FC1);
+    cv::Rodrigues(rVec, R);
+
+    //glm: matlab type, vertical prior.
+    for(size_t h = 0; h < 3; ++h)
+        for(size_t w = 0; w < 3; ++w)
+            transformMat[w][h] = R.at<double>(h, w);
+
+    for(size_t  i = 0; i < 3; ++i)
+        transformMat[3][i] = extrinsics[3+i];
+}
+
 const GLuint WIDTH1 = i3d::PANO_H;
 const GLuint HEIGHT1 = i3d::PANO_H;
 
@@ -162,11 +181,13 @@ void Warper4Android::SKYBOX_GEN_VAO_TEXTURE_MVP(const i3d::Frame &frame, const s
 
     ////////////////////////////////////////////MVP///////////////////////////////////////////////////////////
     //从frame.rxryrxtxtytz中恢复此图片的外参，作为model矩阵参数
-    skyboxModel = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-    skyboxModel = glm::translate(skyboxModel, glm::vec3(frame.tx, frame.ty, frame.tz));//should do translate first before rotate
-    skyboxModel = glm::rotate(skyboxModel, (float)frame.rx, glm::vec3(1.0f, 0.0f, 0.0f));
-    skyboxModel = glm::rotate(skyboxModel, (float)frame.ry, glm::vec3(0.0f, 1.0f, 0.0f));
-    skyboxModel = glm::rotate(skyboxModel, (float)frame.rz, glm::vec3(0.0f, 0.0f, 1.0f));
+    double extrinsics[6] = {frame.rx, frame.ry, frame.rz, frame.tx, frame.ty, frame.tz};
+    transformMatrixFromExtrinsics(extrinsics, skyboxModel);
+//    skyboxModel = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+//    skyboxModel = glm::translate(skyboxModel, glm::vec3(frame.tx, frame.ty, frame.tz));//should do translate first before rotate
+//    skyboxModel = glm::rotate(skyboxModel, (float)frame.rx, glm::vec3(1.0f, 0.0f, 0.0f));
+//    skyboxModel = glm::rotate(skyboxModel, (float)frame.ry, glm::vec3(0.0f, 1.0f, 0.0f));
+//    skyboxModel = glm::rotate(skyboxModel, (float)frame.rz, glm::vec3(0.0f, 0.0f, 1.0f));
 
 }
 
