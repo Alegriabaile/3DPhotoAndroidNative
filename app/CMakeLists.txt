@@ -34,11 +34,16 @@ file(GLOB I3D_SRCS
         src/main/cpp/src/readData.cpp
         src/main/cpp/src/initInputData.cpp
         src/main/cpp/src/genFeatures.cpp
-#        src/main/cpp/src/genRelativePoses.cpp
         src/main/cpp/src/genInitialGraph.cpp
         src/main/cpp/src/genGlobalByMst.cpp
 
 #        src/main/cpp/src/DProblem1.cpp
+
+        src/main/cpp/src/1FrameReader.cpp
+
+        src/main/cpp/src/6CubemapCapturer.cpp
+        src/main/cpp/src/6Cubemap2Sphere.cpp
+        src/main/cpp/src/6PanoramaCapturer.cpp
 
         src/main/cpp/src/WarperEglManager.cpp
         src/main/cpp/src/WarperGlesInitializer.cpp

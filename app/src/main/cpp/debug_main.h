@@ -10,6 +10,8 @@
 #include "Frame.h"
 #include "i3d.h"
 
+#include "1FrameReader.h"
+
 #include "initInputData.h"
 #include "genFeatures.h"
 #include "genInitialGraph.h"
@@ -17,7 +19,8 @@
 #include "genGlobalByMst.h"
 #include "DeformableProblem.h"
 
-#include <Warper4Android.h>
+//#include "Warper4Android.h"
+#include "6PanoramaCapturer.h"
 #include "stitchAllPanos.h"
 #include "genCompactTri.h"
 
@@ -33,7 +36,8 @@ int debug_initInputData(std::string root_dir, std::vector<i3d::Frame> &kframes, 
 //    std::vector<i3d::Frame> frames;
     LOGW("start initFrames");
 //    Intrinsics intrinsics;
-    initFrames(root_dir, kframes, intrinsics);
+//    initFrames(root_dir, kframes, intrinsics);
+    m3d::FrameReader frameReader(root_dir, kframes, intrinsics);
     LOGW("finish initFrames");
 
 
@@ -109,7 +113,8 @@ int debug_warpToPanoramas(std::vector<i3d::Frame> &kframes, i3d::Intrinsics& int
     LOGW("[                                     ]");
     //*********gles warp perspective frames to panorama   *************//
     LOGW("start warper4Android...");
-    Warper4Android warper4Android(kframes, intrinsics);
+    m3d::PanoramaCapturer panoramaCapturer(kframes, intrinsics);
+//    Warper4Android warper4Android(kframes, intrinsics);
     LOGW("finish warper4Android...");
 
     return 0;
