@@ -62,6 +62,7 @@ Java_i3d_native0701_ProcessTask_processI3d(JNIEnv *env, jobject obj, jstring jav
 
         genCompactTri(pano, texture, vertices);
         env->CallIntMethod(obj, jmethodID1);
+
     }
 
     return frames.size();

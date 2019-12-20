@@ -134,41 +134,41 @@ int debug_stitchAllPanos(std::vector<i3d::Frame> &kframes, i3d::Frame& pano)
 }
 
 
-int debug_main(std::string root_dir, std::vector<i3d::Frame> &kframes, std::vector<float>& vertices, cv::Mat& texture)
-{
-    using namespace std;
-    using namespace cv;
-    using namespace i3d;
-
-    Intrinsics intrinsics;
-    debug_initInputData(root_dir, kframes, intrinsics);
-
-
-    debug_estimatePoses(kframes, intrinsics);
-
-
-    debug_warpToPanoramas(kframes, intrinsics);
-
-
-
-    Frame pano;
-    debug_stitchAllPanos(kframes, pano);
-
-    LOGE("debug_main(): save pano result.");
-    string res_pano_color = root_dir + string("/debug_res_pano/pano_color.jpg");
-    imwrite(res_pano_color, pano.pano_image);
-
-//    string tri_out_dir = root_dir + string("/debug_compact_tri");
-//    genCompactTri(tri_out_dir, pano);//icount==30
-
-//    Mat finalTexture;
-//    vector<float> finalArray;
-    LOGE("debug_main(): save texture result.");
-    genCompactTri(pano, texture, vertices);
-    string texture_name = root_dir + string("/debug_compact_tri/texture.jpg");
-    imwrite(texture_name, texture);
-
-    return 0;
-}
+//int debug_main(std::string root_dir, std::vector<i3d::Frame> &kframes, std::vector<float>& vertices, cv::Mat& texture)
+//{
+//    using namespace std;
+//    using namespace cv;
+//    using namespace i3d;
+//
+//    Intrinsics intrinsics;
+//    debug_initInputData(root_dir, kframes, intrinsics);
+//
+//
+//    debug_estimatePoses(kframes, intrinsics);
+//
+//
+//    debug_warpToPanoramas(kframes, intrinsics);
+//
+//
+//
+//    Frame pano;
+//    debug_stitchAllPanos(kframes, pano);
+//
+//    LOGE("debug_main(): save pano result.");
+//    string res_pano_color = root_dir + string("/debug_res_pano/pano_color.jpg");
+//    imwrite(res_pano_color, pano.pano_image);
+//
+////    string tri_out_dir = root_dir + string("/debug_compact_tri");
+////    genCompactTri(tri_out_dir, pano);//icount==30
+//
+////    Mat finalTexture;
+////    vector<float> finalArray;
+//    LOGE("debug_main(): save texture result.");
+//    genCompactTri(pano, texture, vertices);
+//    string texture_name = root_dir + string("/debug_compact_tri/texture.jpg");
+//    imwrite(texture_name, texture);
+//
+//    return 0;
+//}
 
 #endif //NATIVE0701_DEBUG_INITINPUTDATA_H
