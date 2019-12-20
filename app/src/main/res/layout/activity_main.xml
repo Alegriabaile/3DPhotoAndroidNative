@@ -47,14 +47,22 @@
                 android:text="state"
                 android:gravity="center"/>
 
-            <EditText
-                android:id="@+id/edittext_dir"
+            <!--<EditText-->
+                <!--android:id="@+id/edittext_dir"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:inputType="text"-->
+                <!--android:cursorVisible="true"-->
+                <!--android:visibility="visible"/>-->
+
+            <Spinner
+                android:id="@+id/my_spinner"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="text"
-                android:cursorVisible="true"
-                android:visibility="visible"/>
+                android:spinnerMode="dialog"
+                android:layout_margin="10dp">
 
+            </Spinner>
 
             <Button
                 android:id="@+id/button_generate3d"

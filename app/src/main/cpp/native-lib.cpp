@@ -40,7 +40,8 @@ Java_i3d_native0701_ProcessTask_processI3d(JNIEnv *env, jobject obj, jstring jav
 //        LOGW("debug_initInputData start.........");
 //        debug_main(root_dir, frames, vertices, texture);
 //        LOGW("debug_initInputData finished.............");
-
+        texture = cv::Mat();
+        vertices.clear();
 
         jclass claz = env->GetObjectClass(obj);
         jmethodID jmethodID1=env->GetMethodID(claz,"notifyMainActivity","()I");

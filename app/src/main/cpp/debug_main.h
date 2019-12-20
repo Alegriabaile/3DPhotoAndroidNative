@@ -17,9 +17,10 @@
 #include "genInitialGraph.h"
 #include "genKeyFrames.h"
 #include "genGlobalByMst.h"
+
+#include "RigidProblem.h"
 #include "DeformableProblem.h"
 
-//#include "Warper4Android.h"
 #include "6PanoramaCapturer.h"
 #include "stitchAllPanos.h"
 #include "genCompactTri.h"
@@ -31,8 +32,8 @@ int debug_initInputData(std::string root_dir, std::vector<i3d::Frame> &kframes, 
     using namespace cv;
     using namespace i3d;
 
-    LOGW("[                                     ]");
-    LOGW("[                                     ]");
+    LOGW("                                       ");
+    LOGW("                                       ");
 //    std::vector<i3d::Frame> frames;
     LOGW("start initFrames");
 //    Intrinsics intrinsics;
@@ -41,11 +42,13 @@ int debug_initInputData(std::string root_dir, std::vector<i3d::Frame> &kframes, 
     LOGW("finish initFrames");
 
 
-    LOGW("[                                     ]");
-    LOGW("[                                     ]");
+    LOGW("                                       ");
+    LOGW("                                       ");
     //*********compute feature points(corners and descriptors)***************//
     LOGW("start computeFeatures...");
     computeFeatures(kframes);//opencv内部利用了多线程
+    LOGE("kframes.size():  %d.", kframes.size());
+
     LOGW("finish computeFeatures");
     return 0;
 }
@@ -57,8 +60,8 @@ int debug_estimatePoses(std::vector<i3d::Frame> &frames, i3d::Intrinsics& intrin
     using namespace cv;
     using namespace i3d;
 
-    LOGW("[                                     ]");
-    LOGW("[                                     ]");
+    LOGW("                                       ");
+    LOGW("                                       ");
     //*********determine match pairs*************************************//
     LOGW("start genInitGraph...");
     vector<Edge> edges;
@@ -66,17 +69,18 @@ int debug_estimatePoses(std::vector<i3d::Frame> &frames, i3d::Intrinsics& intrin
 //    genRelativePoses(frames, intrinsics, edges);//有并发提升空间
     LOGW("finish genInitGraph");
 
-    LOGW("[                                     ]");
-    LOGW("[                                     ]");
+    LOGW("                                       ");
+    LOGW("                                       ");
     //*********generate key frames*******************************//
     //delete standalone frames(those without valuable edges)
     LOGW("start genKeyFrames1...");
     vector<Frame> tkframes;
     genKeyFrames(frames, edges, tkframes);
+    LOGE("kframes.size():  %d.", tkframes.size());
     LOGW("finish genKeyFrames1...");
 
-    LOGW("[                                     ]");
-    LOGW("[                                     ]");
+    LOGW("                                       ");
+    LOGW("                                       ");
     //*********g2o 粗糙全局位恣求解********************************//
     LOGW("start genGlobalByMst...");
     vector<Edge> kedges;
@@ -85,12 +89,15 @@ int debug_estimatePoses(std::vector<i3d::Frame> &frames, i3d::Intrinsics& intrin
     vector<Frame> kframes;
     LOGW("start genKeyFrames2...");
     genKeyFrames(tkframes, kedges, kframes);
+    LOGE("kframes.size():  %d.", kframes.size());
     LOGW("finish genKeyFrames2...");
+
+
     LOGW("finish genGlobalByMst...");
     //****更快的、更好用的粗糙全局位恣求解，可以用最小耗费生成树算法******//
 
-    LOGW("[                                     ]");
-    LOGW("[                                     ]");
+    LOGW("                                       ");
+    LOGW("                                       ");
     //*********ceres lib 最小二乘法优化 *******************************//
     LOGW("start solveProblem...");
 //    char length[5] = {0};
@@ -98,7 +105,11 @@ int debug_estimatePoses(std::vector<i3d::Frame> &frames, i3d::Intrinsics& intrin
     string str("kframes.size(): ");
     str.append(to_string(kframes.size()));
     LOGW("         %s    ", str.c_str());
-    DeformableProblem<2,2> deformableProblemWxh(kframes, kedges, intrinsics);
+
+    if(kframes[0].image.cols >= 1920)
+        i3d_rp::RigidProblem rigidProblem(kframes, kedges, intrinsics);
+    else
+        i3d_dp::DeformableProblem<2,2> deformableProblemWxh(kframes, kedges, intrinsics);
     LOGW("finish solveProblem...");
 
     frames = kframes;
@@ -109,8 +120,8 @@ int debug_estimatePoses(std::vector<i3d::Frame> &frames, i3d::Intrinsics& intrin
 int debug_warpToPanoramas(std::vector<i3d::Frame> &kframes, i3d::Intrinsics& intrinsics)
 {
 
-    LOGW("[                                     ]");
-    LOGW("[                                     ]");
+    LOGW("                                       ");
+    LOGW("                                       ");
     //*********gles warp perspective frames to panorama   *************//
     LOGW("start warper4Android...");
     m3d::PanoramaCapturer panoramaCapturer(kframes, intrinsics);
@@ -123,8 +134,8 @@ int debug_warpToPanoramas(std::vector<i3d::Frame> &kframes, i3d::Intrinsics& int
 
 int debug_stitchAllPanos(std::vector<i3d::Frame> &kframes, i3d::Frame& pano)
 {
-    LOGW("[                                     ]");
-    LOGW("[                                     ]");
+    LOGW("                                       ");
+    LOGW("                                       ");
     //*********gles warp perspective frames to panorama   *************//
     LOGW("start stitchAllPanos...");
     stitchAllPanos(kframes, pano);

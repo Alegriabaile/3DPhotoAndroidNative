@@ -1,5 +1,6 @@
 package i3d.native0701;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -9,17 +10,24 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener{
 
     static {
         System.loadLibrary("native-lib");
@@ -35,7 +43,10 @@ public class MainActivity extends AppCompatActivity {
 
     private Button mButtonGenerate3d, mButtonGLViewer;
 
-    private String javaString = "/sdcard/Native0701/000i3dc3";
+    private String javaString = "/sdcard/Native0701/casual3d5";
+    private Spinner mSpinner;
+    private Context mContext;
+    private List<String> mList;
 
     static private Handler handler;
     static private ProcessTask processTask;//防止MainActivity无法回收导致的资源泄露
@@ -48,8 +59,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        editText = findViewById(R.id.edittext_dir);
-        editText.setText(javaString);
+        mContext = MainActivity.this;
+
+//        editText = findViewById(R.id.edittext_dir);
+//        editText.setText(javaString);
+        mSpinner = findViewById(R.id.my_spinner);
+        mSpinner.setOnItemSelectedListener(this);
+        mList = getFilesAllName("/sdcard/Native0701");
+        ArrayAdapter<String> adapter = new ArrayAdapter(this, R.layout.my_spinner_item, R.id.text, mList);
+        mSpinner.setAdapter(adapter);
+        mSpinner.setPrompt("选择数据集...");
 
         imageView = findViewById(R.id.image_view);
         stateTextView = findViewById(R.id.textview_state);
@@ -70,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                javaString = editText.getText().toString();
+//                javaString = editText.getText().toString();
 
                 if(processTask!=null)
                     processTask.cancel(true);
@@ -109,6 +128,30 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        javaString = parent.getItemAtPosition(position).toString();
+        Toast.makeText(mContext,"选择了数据集：" + javaString, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+    }
+
+    //get all sub-dirs of "/sdcard/Native0701".
+    public static List<String> getFilesAllName(String path) {
+
+        List<String> s = new ArrayList<String>();
+
+        File file=new File(path);
+        File[] files=file.listFiles();
+
+        for(int i =0;i<files.length;i++)
+            s.add( files[i].getAbsolutePath());
+
+        return s;
     }
 
     void myToast(int state)

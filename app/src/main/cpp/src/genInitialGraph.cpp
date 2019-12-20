@@ -148,6 +148,9 @@ int genInitialGraph(const vector<Frame>& frames, const Intrinsics& intrinsics, v
 
             double translation = fabs(min(cv::norm(rvec), 2*M_PI-cv::norm(rvec)))+ fabs(cv::norm(tvec/1000.0));//why use this????
 
+            LOGE("genInitialGraph(): frame(%s, %s): psize: %d,   n_inliers: %d, translation: %lf.", frames[i].imageFileName.c_str(), frames[j].imageFileName.c_str(), psize, n_inliers, translation);
+//            LOGE("genInitialGraph(): frame(%d, %d): psize: %d,   n_inliers: %d, translation: %lf.", i, j, psize, n_inliers, translation);
+
 #ifdef GEN_INITIAL_GRAPH
             cout<<"************************************************************"<<endl;
             cout<<i<<","<<j<<" :   feature_points matched_points inliers translations inliers_rate : "<<endl
@@ -155,17 +158,25 @@ int genInitialGraph(const vector<Frame>& frames, const Intrinsics& intrinsics, v
                 << " "<<n_inliers/(double)(ppi.size())<<endl;
             //cout<<"rx, ry, rz, tx, ty, tz: "<<rvec<<endl<<tvec<<endl;
 #endif
+
             const double MIN_MATCHED_FEATURE_POINTS = double(frames[i].keypoints.size())/6.0;//20
             const double MIN_INLIER_ROWS = double(frames[i].keypoints.size())/12.0;//11
             const double MIN_INLIER_MATCHED_RATE0 = 0.33;
             const double MIN_INLIER_MATCHED_RATE1 = 0.50;
             const double MIN_TRANSLATION = 0.05;
             const double MAX_TRANSLATION = 0.55;//0.5
-            if( ppi.size() <= MIN_MATCHED_FEATURE_POINTS)continue;//MIN_MATCHED_FEATURE_POINTS
-            if( n_inliers <= MIN_INLIER_ROWS)continue;//MIN_INLIER_ROWS..not reliable???
-            if( translation > MAX_TRANSLATION || translation < MIN_TRANSLATION)continue;
-            if( ppi.size()<MIN_MATCHED_FEATURE_POINTS*2 && n_inliers/(double)(ppi.size())<MIN_INLIER_MATCHED_RATE1) continue;
-            if( ppi.size()>=MIN_MATCHED_FEATURE_POINTS*2 && n_inliers/(double)(ppi.size())<MIN_INLIER_MATCHED_RATE0) continue;
+            if(size.width >= 1920)
+            {
+                if(translation > MAX_TRANSLATION || translation < MIN_TRANSLATION) continue;
+            } else
+            {
+                if( ppi.size() <= MIN_MATCHED_FEATURE_POINTS)continue;//MIN_MATCHED_FEATURE_POINTS
+                if( n_inliers <= MIN_INLIER_ROWS)continue;//MIN_INLIER_ROWS..not reliable???
+                if( translation > MAX_TRANSLATION || translation < MIN_TRANSLATION)continue;
+                if( ppi.size()<MIN_MATCHED_FEATURE_POINTS*2 && n_inliers/(double)(ppi.size())<MIN_INLIER_MATCHED_RATE1) continue;
+                if( ppi.size()>=MIN_MATCHED_FEATURE_POINTS*2 && n_inliers/(double)(ppi.size())<MIN_INLIER_MATCHED_RATE0) continue;
+            }
+
             i3d::Edge edge;
             edge.src = i; edge.dst = j;
             edge.rx = rvec.at<double>(0); edge.ry = rvec.at<double>(1); edge.rz = rvec.at<double>(2);
